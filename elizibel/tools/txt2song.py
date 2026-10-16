@@ -40,13 +40,15 @@ def compile_song(path, outdir):
                 else:
                     notes = []
                     for q in p.split('+'):
+                        fing = 0
+                        if '/' in q: q, fs = q.split('/'); fing = int(fs)
                         dia, alt, midi, explicit = parse_pitch(q)
                         st = dia % 7
                         kalt = 1 if st in keyset_sh else (-1 if st in keyset_fl else 0)
                         cur = state.get(dia, kalt)
                         shown = 9
                         if alt != cur: shown = alt; state[dia] = alt
-                        notes.append([midi, dia, alt, shown, 2 if tie else 0, 0])
+                        notes.append([midi, dia, alt, shown, 2 if tie else 0, 0, fing])
                     ev.append([t, dur, staff, 0, 0, 1 if '.' in d else 0, 0, 0, 0, notes, BASE[d]])
                 t += dur
             if t - start != length:

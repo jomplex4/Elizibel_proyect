@@ -5,7 +5,7 @@ import org.json.JSONArray
 import org.json.JSONObject
 
 /** Una cabeza de nota: altura real (midi), posicion escrita (diatonica), alteracion, alteracion mostrada, ligaduras y octava (8va). */
-class NoteH(val midi: Int, val dia: Int, val alt: Int, val shown: Int, val tie: Int, val oct: Int) {
+class NoteH(val midi: Int, val dia: Int, val alt: Int, val shown: Int, val tie: Int, val oct: Int, val finger: Int = 0) {
     val tieIn get() = tie and 1 != 0
     val tieOut get() = tie and 2 != 0
 }
@@ -70,7 +70,7 @@ object Library {
             val na = e.getJSONArray(9)
             val notes = Array(na.length()) {
                 val n = na.getJSONArray(it)
-                NoteH(n.getInt(0), n.getInt(1), n.getInt(2), n.getInt(3), n.getInt(4), n.getInt(5))
+                NoteH(n.getInt(0), n.getInt(1), n.getInt(2), n.getInt(3), n.getInt(4), n.getInt(5), if (n.length() > 6) n.getInt(6) else 0)
             }
             val base = if (e.length() > 10) e.getInt(10) else e.getInt(1)
             ev.add(Ev(e.getInt(0), e.getInt(1), e.getInt(2), e.getInt(3), e.getInt(4), e.getInt(5), e.getInt(6), e.getInt(7), e.getInt(8) == 1, notes, base))

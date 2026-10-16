@@ -54,7 +54,7 @@ class FastScrollView(ctx: Context) : android.widget.FrameLayout(ctx) {
         sv.isVerticalScrollBarEnabled = false
         sv.overScrollMode = OVER_SCROLL_NEVER
         addView(sv, LayoutParams(MATCH, MATCH))
-        addView(bar, LayoutParams(ctx.dpi(16f), MATCH, android.view.Gravity.END))
+        addView(bar, LayoutParams(ctx.dpi(14f), MATCH, android.view.Gravity.END))
         sv.setOnScrollChangeListener { _, _, _, _, _ -> bar.invalidate() }
     }
 
@@ -82,13 +82,14 @@ class FastScrollView(ctx: Context) : android.widget.FrameLayout(ctx) {
             val th = thumbH()
             val frac = sv.scrollY.toFloat() / maxScroll()
             val top = frac * (height - th)
-            val cx = w - context.dp(6f)
-            p.color = C.CARD2
-            r.set(cx - context.dp(1f), 0f, cx + context.dp(1f), height.toFloat())
-            c.drawRoundRect(r, context.dp(1f), context.dp(1f), p)
-            p.color = if (dragging) C.ICON_BG else C.MUTED
-            r.set(cx - context.dp(2.5f), top, cx + context.dp(2.5f), top + th)
-            c.drawRoundRect(r, context.dp(2.5f), context.dp(2.5f), p)
+            // barra fina pegada al borde derecho de la pantalla
+            val cx = w - context.dp(2.5f)
+            p.color = C.CARD
+            r.set(cx - context.dp(0.5f), 0f, cx + context.dp(0.5f), height.toFloat())
+            c.drawRect(r, p)
+            p.color = if (dragging) C.ICON_BG else C.DIM
+            r.set(cx - context.dp(1.2f), top, cx + context.dp(1.2f), top + th)
+            c.drawRoundRect(r, context.dp(1.2f), context.dp(1.2f), p)
         }
 
         override fun onTouchEvent(e: MotionEvent): Boolean {

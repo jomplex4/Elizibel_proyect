@@ -11,8 +11,18 @@ android {
         applicationId = "com.digitalminds.elizibel"
         minSdk = 26
         targetSdk = 34
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = 3
+        versionName = "1.2"
+    }
+
+    signingConfigs {
+        // firma fija guardada en el repositorio: cada version nueva se instala encima de la anterior
+        create("fija") {
+            storeFile = file("elizibel.keystore")
+            storePassword = "elizibel123"
+            keyAlias = "elizibel"
+            keyPassword = "elizibel123"
+        }
     }
 
     buildTypes {
@@ -20,8 +30,7 @@ android {
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"))
-            // firma con la clave de depuracion para poder instalar el APK directamente
-            signingConfig = signingConfigs.getByName("debug")
+            signingConfig = signingConfigs.getByName("fija")
         }
     }
     compileOptions {

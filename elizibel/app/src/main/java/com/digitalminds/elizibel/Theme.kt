@@ -26,6 +26,11 @@ object C {
     const val MUTED = 0xFF9A9CA4.toInt()
     const val DIM = 0xFF5A5C63.toInt()
     const val ICON_BG = 0xFFBEBEBE.toInt()
+    /** Mano izquierda: rosado. Mano derecha: RED_HI. */
+    const val PINK = 0xFFFF6FAE.toInt()
+    const val PINK_DEEP = 0xFFE0408A.toInt()
+    /** Cuerpo de la flauta: blanco grisaceo. */
+    const val FLUTE = 0xFFDCDDE0.toInt()
 }
 
 object Fonts {
@@ -119,7 +124,7 @@ class IconView(ctx: Context, private val kind: Int) : View(ctx) {
         const val PLAY = 0; const val PAUSE = 1; const val PREV = 2; const val NEXT = 3; const val BACK = 4
         const val METRO = 5; const val TUNER = 6; const val MIC = 7; const val GEAR = 8; const val CHECK = 9
         const val MINUS = 10; const val PLUS = 11; const val NOTE = 12; const val LEARN = 13; const val CLOSE = 14
-        const val UP = 15; const val DOWN = 16; const val CHEVRON_DOWN = 17; const val CHEVRON_RIGHT = 18; const val DRUM = 19; const val KEYS = 20
+        const val UP = 15; const val DOWN = 16; const val CHEVRON_DOWN = 17; const val CHEVRON_RIGHT = 18; const val DRUM = 19; const val KEYS = 20; const val FLUTE = 21; const val INFO = 22; const val HELP = 23
     }
 
     var color = C.TEXT
@@ -187,6 +192,24 @@ class IconView(ctx: Context, private val kind: Int) : View(ctx) {
                 c.drawLine(cx + s * 0.1f, cy - s * 0.18f, cx + s * 0.3f, cy - s * 0.38f, p)
             }
             LEARN -> { drawGlyph(c, 0xE050, s * 1.25f, cx - s * 0.2f, cy + s * 0.22f) }
+            FLUTE -> {
+                // flauta dulce inclinada, solo contorno
+                p.style = Paint.Style.STROKE; p.strokeWidth = s * 0.07f; p.strokeCap = Paint.Cap.ROUND
+                c.save(); c.rotate(-40f, cx, cy)
+                r.set(cx - s * 0.1f, cy - s * 0.46f, cx + s * 0.1f, cy + s * 0.46f); c.drawRoundRect(r, s * 0.1f, s * 0.1f, p)
+                p.style = Paint.Style.FILL
+                for (i in 0..3) c.drawCircle(cx, cy - s * 0.12f + i * s * 0.13f, s * 0.035f, p)
+                c.drawRect(cx - s * 0.06f, cy - s * 0.36f, cx + s * 0.06f, cy - s * 0.3f, p)
+                c.restore(); p.strokeCap = Paint.Cap.BUTT
+            }
+            INFO, HELP -> {
+                // circulo solo con contorno y la letra adentro
+                p.style = Paint.Style.STROKE; p.strokeWidth = s * 0.07f
+                c.drawCircle(cx, cy, s * 0.4f, p)
+                p.style = Paint.Style.FILL
+                p.typeface = Fonts.bold; p.textAlign = Paint.Align.CENTER; p.textSize = s * 0.52f
+                c.drawText(if (kind == INFO) "i" else "?", cx, cy + s * 0.19f, p)
+            }
             KEYS -> {
                 p.style = Paint.Style.STROKE; p.strokeWidth = s * 0.06f
                 r.set(cx - s * 0.36f, cy - s * 0.26f, cx + s * 0.36f, cy + s * 0.26f); c.drawRoundRect(r, s * 0.05f, s * 0.05f, p)

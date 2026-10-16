@@ -53,7 +53,7 @@ class MetronomeTab(private val host: Host) : FrameLayout(host as Context) {
     private val subOf = intArrayOf(1, 1, 1, 3)
     private val sigChips = ArrayList<Chip>()
     private var subIdx = host.prefs.getInt("metro_subdiv", 0)
-    private var accent = host.prefs.getBoolean("metro_accent", true)
+    private var accent = host.prefs.getBoolean("metro_accent2", false)
 
     private val poll = object : Runnable {
         override fun run() {
@@ -96,10 +96,10 @@ class MetronomeTab(private val host: Host) : FrameLayout(host as Context) {
             sg.addView(ch, lp(WRAP, WRAP).also { it.setMargins(ctx.dpi(5f), 0, ctx.dpi(5f), 0) })
         }
         col.addView(sg, lp(MATCH, WRAP))
-        col.addView(pickRow(ctx, listOf("Negras", "Corcheas", "Tresillos", "Semicorcheas"), subIdx) { subIdx = it; host.prefs.edit().putInt("metro_subdiv", it).apply(); applySub() },
-            lp(WRAP, WRAP).also { it.topMargin = ctx.dpi(12f) })
-        col.addView(pickRow(ctx, listOf("Acento en el 1", "Sin acento"), if (accent) 0 else 1) { accent = it == 0; host.prefs.edit().putBoolean("metro_accent", accent).apply(); host.synth.metroAccent = accent },
-            lp(WRAP, WRAP).also { it.topMargin = ctx.dpi(8f) })
+        col.addView(pickGrid(ctx, listOf("Negras", "Corcheas", "Tresillos", "Semicorcheas", "Quintillos", "Seisillos"), subIdx.coerceIn(0, 5), 3) { subIdx = it; host.prefs.edit().putInt("metro_subdiv", it).apply(); applySub() },
+            lp(MATCH, WRAP).also { it.topMargin = ctx.dpi(12f) })
+        col.addView(pickGrid(ctx, listOf("Todos iguales", "Acento en el 1"), if (accent) 1 else 0, 2) { accent = it == 1; host.prefs.edit().putBoolean("metro_accent2", accent).apply(); host.synth.metroAccent = accent },
+            lp(MATCH, WRAP).also { it.topMargin = ctx.dpi(8f) })
 
         col.addView(View0(), lp(MATCH, 0, 0.5f))
         playBtn.background = roundRect(C.RED, ctx.dp(40f))
@@ -136,7 +136,7 @@ class MetronomeTab(private val host: Host) : FrameLayout(host as Context) {
     }
 
     private fun applySub() {
-        host.synth.metroSub = if (sigIdx == 3) 3 else intArrayOf(1, 2, 3, 4)[subIdx]
+        host.synth.metroSub = if (sigIdx == 3 && subIdx == 0) 3 else intArrayOf(1, 2, 3, 4, 5, 6)[subIdx.coerceIn(0, 5)]
     }
 
     private fun refresh() {
@@ -290,7 +290,7 @@ class TunerTab(private val host: Host) : FrameLayout(host as Context) {
     private var active = false
     private var smoothCents = 0f
     private var lastVoiced = 0L
-    private val noteV = label(ctx, "-", 92f, C.TEXT, Fonts.bold)
+    private val noteV = label(ctx, "-", 76f, C.TEXT, Fonts.bold)
     private val octV = label(ctx, "", 22f, C.MUTED, Fonts.medium)
     private val freqV = label(ctx, "", 14f, C.MUTED)
     private val writtenV = label(ctx, "", 15f, C.TEXT, Fonts.medium)
@@ -315,8 +315,10 @@ class TunerTab(private val host: Host) : FrameLayout(host as Context) {
         val col = LinearLayout(ctx)
         col.orientation = LinearLayout.VERTICAL
         col.gravity = Gravity.CENTER_HORIZONTAL
-        col.setPadding(ctx.dpi(20f), ctx.dpi(10f), ctx.dpi(20f), ctx.dpi(10f))
-        addView(col, LayoutParams(MATCH, MATCH))
+        col.setPadding(ctx.dpi(20f), ctx.dpi(4f), ctx.dpi(20f), ctx.dpi(16f))
+        val sv = FastScrollView(ctx)
+        sv.setContent(col)
+        addView(sv, LayoutParams(MATCH, MATCH))
         col.addView(liveSegmented(ctx, listOf("Flauta", "Piano"), instSel, 13f, 8f) {
             instSel = it; host.prefs.edit().putInt("tuner_mode", it).apply(); instInfoV.text = instInfo[it]; restart()
         }, lp(MATCH, WRAP).also { it.topMargin = ctx.dpi(6f) })
@@ -324,8 +326,8 @@ class TunerTab(private val host: Host) : FrameLayout(host as Context) {
         instInfoV.gravity = Gravity.CENTER
         instInfoV.setPadding(ctx.dpi(6f), ctx.dpi(6f), ctx.dpi(6f), 0)
         col.addView(instInfoV, lp(MATCH, WRAP))
-        col.addView(arc, lp(MATCH, ctx.dpi(140f)).also { it.topMargin = ctx.dpi(8f) })
-        col.addView(android.view.View(ctx), lp(MATCH, 0, 0.2f))
+        col.addView(arc, lp(MATCH, ctx.dpi(118f)).also { it.topMargin = ctx.dpi(6f) })
+        col.addView(android.view.View(ctx), lp(MATCH, ctx.dpi(6f)))
         val nrow = LinearLayout(ctx)
         nrow.gravity = Gravity.BOTTOM or Gravity.CENTER_HORIZONTAL
         nrow.addView(noteV, lp(WRAP, WRAP))
@@ -333,13 +335,13 @@ class TunerTab(private val host: Host) : FrameLayout(host as Context) {
         nrow.addView(octV, lp(WRAP, WRAP))
         col.addView(nrow, lp(WRAP, WRAP))
         col.addView(freqV, lp(WRAP, WRAP))
-        col.addView(bar, lp(MATCH, ctx.dpi(86f)).also { it.topMargin = ctx.dpi(12f) })
+        col.addView(bar, lp(MATCH, ctx.dpi(74f)).also { it.topMargin = ctx.dpi(8f) })
         writtenV.setPadding(0, ctx.dpi(8f), 0, 0)
         writtenV.gravity = Gravity.CENTER
         col.addView(writtenV, lp(WRAP, WRAP))
         statusV.setPadding(0, ctx.dpi(6f), 0, 0)
         col.addView(statusV, lp(WRAP, WRAP))
-        col.addView(android.view.View(ctx), lp(MATCH, 0, 0.4f))
+        col.addView(android.view.View(ctx), lp(MATCH, ctx.dpi(16f)))
         val ref = LinearLayout(ctx)
         ref.gravity = Gravity.CENTER_VERTICAL
         val minus = Chip(ctx, "−"); minus.tap { setA4(a4 - 1) }
@@ -351,8 +353,8 @@ class TunerTab(private val host: Host) : FrameLayout(host as Context) {
         val refs = listOf("La", "Do", "Re", "Mi", "Sol")
         val refMidi = intArrayOf(69, 72, 74, 76, 79)
         col.addView(label(ctx, "Escuchar nota de referencia", 12f, C.MUTED).also { it.setPadding(0, ctx.dpi(10f), 0, ctx.dpi(6f)) })
-        col.addView(pickRow(ctx, refs, 0) { i -> refNote = refMidi[i]; playRef() }, lp(WRAP, WRAP))
-        col.addView(android.view.View(ctx), lp(MATCH, 0, 0.3f))
+        col.addView(pickGrid(ctx, refs, 0, 5) { i -> refNote = refMidi[i]; playRef() }, lp(MATCH, WRAP))
+        col.addView(android.view.View(ctx), lp(MATCH, ctx.dpi(8f)))
         setA4(a4)
         showIdle()
     }

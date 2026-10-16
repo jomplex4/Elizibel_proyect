@@ -6,7 +6,7 @@
 "inst": "piano",
 "level": 3,
 "group": "main",
-"arr": "Piano de la canción · banda de fondo"
+"arr": "Piano solo: melodía en la derecha, acordes en la izquierda"
 },
 {
 "id": "icarus",
@@ -31,9 +31,9 @@
 "title": "Interstellar",
 "composer": "Hans Zimmer",
 "inst": "piano",
-"level": 5,
+"level": 2,
 "group": "main",
-"arr": "Main Theme · Arr. Gabriel Piano"
+"arr": "Main Theme · Arr. Cristian Ferrer Díaz"
 },
 {
 "id": "experience",
@@ -52,6 +52,24 @@
 "level": 2,
 "group": "main",
 "arr": "Acompañamiento · Arr. F. Pastori"
+},
+{
+"id": "whitechristmas",
+"title": "White Christmas",
+"composer": "Irving Berlin",
+"inst": "flute",
+"level": 1,
+"group": "main",
+"arr": "Flauta dulce soprano"
+},
+{
+"id": "interstellar_fl",
+"title": "Interstellar",
+"composer": "Hans Zimmer",
+"inst": "flute",
+"level": 2,
+"group": "main",
+"arr": "Main Theme · un tono abajo para la flauta dulce"
 },
 {
 "id": "comptine",
@@ -81,13 +99,13 @@
 "arr": "Con bajo sencillo"
 },
 {
-"id": "p_himno",
-"title": "Himno a la alegría",
-"composer": "Ludwig van Beethoven",
+"id": "p_whitechristmas",
+"title": "White Christmas",
+"composer": "Irving Berlin",
 "inst": "piano",
 "level": 1,
 "group": "learn",
-"arr": "Con bajo sencillo"
+"arr": "Versión del Conservatorio Fidelis · con digitación"
 },
 {
 "id": "p_canon",

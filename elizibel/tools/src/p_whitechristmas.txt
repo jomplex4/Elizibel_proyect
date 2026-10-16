@@ -1,0 +1,12 @@
+id: p_whitechristmas
+title: White Christmas
+composer: Irving Berlin
+arr: Versión del Conservatorio Fidelis · con digitación
+inst: piano
+group: learn
+level: 1
+time: 4/4
+key: 0
+bpm: 80
+rh: w:E4/3 | q:F4/4 q:E4/3 q:D#4/2 q:E4/3 | w:F4/4 | q:F#4/4 h.:G4/5 | w:r | q:D4/2 q:C4/4 h:r | w:r | h:r q:C4/1 q:D4/2 | w:E4/3 | q:E4/2 h:A4/5 q:G4/5 | w:C4/1 | q:C4/1 h:G4/5 q:F4/4 | w:E4/3 | q:F4/4 q:E4/3 q:D4/2 q:C4/1 | w:D4/2~ | w:D4 | w:E4/3 | q:F4/4 q:E4/3 q:D#4/2 q:E4/3 | w:F4/4 | q:F#4/4 h.:G4/5 | w:r | q:D4/2 q:C4/1 h:r | w:r | h:r q:C4/1 q:D4/2 | w:E4/3 | q:E4/2 h:A4/5 q:G4/5 | w:C4/1 | q:C4/1 h:G4/5 q:F4/4 | w:E4/3 | h.:r q:D4/2 | w:C4/1 | w:E4/3
+lh: w:G3/4 | w:r | w:A3/3 | w:r | q:r q:A3/3 q:B3/2 q:C4/1 | h:r q:B3/2 q:A3/3 | w:G3/4~ | h:G3 h:r | w:G3/4 | w:r | w:A3/3 | w:r | w:G3/4 | w:r | w:A3/3 | w:B3/2 | w:G3/4 | w:r | w:A3/3 | w:r | q:r q:A3/3 q:B3/2 q:C4/1 | h:r q:B3/2 q:A3/3 | w:G3/4~ | h:G3 h:r | w:G3/4 | w:r | w:A3/3 | w:r | w:G3/4 | q:A3/3 q:G3/4 q:B3/2 q:r | w:r | w:B3/2

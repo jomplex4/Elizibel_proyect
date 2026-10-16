@@ -90,6 +90,7 @@ class MainActivity : Activity(), Host {
     override fun onStart() {
         super.onStart()
         synth.start()
+        home?.reactivate()
     }
 
     override fun onStop() {
@@ -128,7 +129,9 @@ class MainActivity : Activity(), Host {
         root.removeAllViews()
         val h = home ?: HomeScreen(this) { song -> openPlayer(song) }
         home = h
+        (h.parent as? android.view.ViewGroup)?.removeView(h)
         root.addView(h, FrameLayout.LayoutParams(MATCH, MATCH))
+        h.onReturn()
     }
 
     private fun openPlayer(song: Song) {

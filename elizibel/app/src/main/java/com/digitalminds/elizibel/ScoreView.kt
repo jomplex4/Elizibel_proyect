@@ -94,10 +94,10 @@ class ScoreView(ctx: Context) : View(ctx) {
     private fun key(pe: PEv, midi: Int): Long = (System.identityHashCode(pe).toLong() shl 8) or midi.toLong()
 
     override fun onSizeChanged(w: Int, h: Int, ow: Int, oh: Int) {
-        sp = h / (if (staves == 2) 27f else 16f)
+        sp = h / (if (staves == 2) 23.5f else 14f)
     }
 
-    private fun topOf(staff: Int): Float = if (staff == 0) 6f * sp else 17.5f * sp
+    private fun topOf(staff: Int): Float = if (staves == 1) 5f * sp else if (staff == 0) 4.6f * sp else 14.8f * sp
     private fun bottomLine(staff: Int): Float = topOf(staff) + 4 * sp
     private fun baseDia(staff: Int): Int = if (staves == 2 && staff == 1) 18 else 30
     private fun yOf(staff: Int, dia: Int): Float = bottomLine(staff) - (dia - baseDia(staff)) * sp / 2f
@@ -116,7 +116,7 @@ class ScoreView(ctx: Context) : View(ctx) {
         val dim = (hand == 1 && pe.e.staff == 1) || (hand == 2 && pe.e.staff == 0)
         return when {
             curT >= pe.t + max(pe.e.sound, 60) -> if (dim) C.DIM else C.MUTED
-            curT >= pe.t - 1 -> C.RED_HI
+            curT >= pe.t - 1 -> if (pe.e.staff == 1 && staves == 2) C.PINK else C.RED_HI
             dim -> C.DIM
             else -> C.TEXT
         }
@@ -144,7 +144,7 @@ class ScoreView(ctx: Context) : View(ctx) {
             lineP.color = C.MUTED; lineP.strokeWidth = sp * 0.12f
             c.drawLine(x, topOf(0), x, bottomLine(staves - 1), lineP)
             textP.color = C.DIM; textP.textSize = sp * 1.15f
-            c.drawText((pm.index + 1).toString(), x + sp * 0.6f, topOf(0) - sp * 1.6f, textP)
+            c.drawText((pm.index + 1).toString(), x + sp * 0.6f, topOf(0) - sp * 1.2f, textP)
             i++
         }
         // eventos visibles
@@ -188,8 +188,8 @@ class ScoreView(ctx: Context) : View(ctx) {
         // linea de ahora
         val nx = nowX()
         fillP.color = C.RED
-        c.drawRect(nx - sp * 0.12f, topOf(0) - sp * 2.5f, nx + sp * 0.12f, bottomLine(staves - 1) + sp * 2.5f, fillP)
-        path.reset(); path.moveTo(nx - sp * 0.7f, topOf(0) - sp * 3.2f); path.lineTo(nx + sp * 0.7f, topOf(0) - sp * 3.2f); path.lineTo(nx, topOf(0) - sp * 2.3f); path.close()
+        c.drawRect(nx - sp * 0.12f, topOf(0) - sp * 2.2f, nx + sp * 0.12f, bottomLine(staves - 1) + sp * 2.2f, fillP)
+        path.reset(); path.moveTo(nx - sp * 0.7f, topOf(0) - sp * 2.9f); path.lineTo(nx + sp * 0.7f, topOf(0) - sp * 2.9f); path.lineTo(nx, topOf(0) - sp * 2.0f); path.close()
         c.drawPath(path, fillP)
     }
 
@@ -281,6 +281,21 @@ class ScoreView(ctx: Context) : View(ctx) {
                 c.drawText(if (n.oct > 0) (if (n.oct >= 24) "15ma" else "8va") else "8vb", x + hw / 2, if (n.oct > 0) min(topOf(st), minY) - sp * 2.4f else max(bottomLine(st), maxY) + sp * 2.8f, textP)
             }
         }
+        val fings = sorted.filter { it.finger > 0 }
+        if (fings.isNotEmpty()) {
+            textP.color = if (col == C.RED_HI || col == C.PINK) col else C.MUTED
+            textP.textSize = sp * 1.25f; textP.typeface = Fonts.bold
+            val txt = (if (st == 0) fings.reversed() else fings).joinToString("\n") { it.finger.toString() }
+            if (st == 0) {
+                val yb = min(topOf(0) - sp * 0.4f, (if (up) minY - sp * 3.6f else minY - sp * 1.0f))
+                var yy = yb
+                for (f in fings) { c.drawText(f.finger.toString(), x + hw / 2, yy, textP); yy -= sp * 1.3f }
+            } else {
+                var yy = max(bottomLine(st) + sp * 1.6f, (if (up) maxY + sp * 1.9f else maxY + sp * 4.6f))
+                for (f in fings.reversed()) { c.drawText(f.finger.toString(), x + hw / 2, yy, textP); yy += sp * 1.3f }
+            }
+            if (txt.isEmpty()) { }
+        }
         if (e.base < 1920) {
             val sx = if (up) x + hw - sp * 0.07f else x + sp * 0.07f
             val g = beamOf[pe]
@@ -362,12 +377,15 @@ class ScoreView(ctx: Context) : View(ctx) {
     private var downX = 0f
     private var lastX = 0f
     private var moved = false
+    private var edge = false
 
     override fun onTouchEvent(e: MotionEvent): Boolean {
         when (e.actionMasked) {
-            MotionEvent.ACTION_DOWN -> { downX = e.x; lastX = e.x; moved = false }
+            MotionEvent.ACTION_DOWN -> { downX = e.x; lastX = e.x; moved = false; edge = e.x < context.dp(32f) || e.x > width - context.dp(32f) }
             MotionEvent.ACTION_MOVE -> {
-                if (!moved && abs(e.x - downX) > sp * 1.5f) { moved = true; parent.requestDisallowInterceptTouchEvent(true); onDragStart?.invoke() }
+                // un jalon corto desde el borde (gestos del sistema) no mueve la partitura; uno largo si
+                val need = if (edge) width * 0.22f else sp * 1.5f
+                if (!moved && abs(e.x - downX) > need) { moved = true; lastX = e.x; parent.requestDisallowInterceptTouchEvent(true); onDragStart?.invoke() }
                 if (moved) { onDrag?.invoke(-(e.x - lastX) / ppt); lastX = e.x }
             }
             MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {

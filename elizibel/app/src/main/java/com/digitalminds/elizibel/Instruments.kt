@@ -2,24 +2,27 @@ package com.digitalminds.elizibel
 
 import android.content.Context
 import android.graphics.Canvas
+import android.graphics.LinearGradient
 import android.graphics.Paint
 import android.graphics.RectF
+import android.graphics.Shader
 import android.view.MotionEvent
 import android.view.View
 import kotlin.math.max
 import kotlin.math.min
 
 /**
- * Teclado de piano. Las teclas que debes tocar se encienden: rojo = mano derecha, gris claro = mano izquierda.
- * Las que pulsas (pantalla o piano USB) muestran un punto blanco. Con "notas que caen" se ve encima
- * lo que viene, bajando hacia cada tecla.
+ * Teclado de piano. Lo que debes tocar se enciende: ROJO = mano derecha, ROSADO = mano izquierda.
+ * Lo que pulsas (pantalla o piano USB) muestra un punto. Con "notas que caen" se ve encima lo que viene:
+ * cada barra tiene el ancho exacto de su tecla y unas lineas tenues separan las teclas.
  */
 class KeyboardView(ctx: Context) : View(ctx) {
     var lo = 21
         private set
     var hi = 108
         private set
-    var labels = true
+    /** Nombres en las teclas: 0 ninguno, 1 solo Do, 2 todas las blancas. */
+    var names = 1
     var falling = false
         set(v) { field = v; invalidate() }
     var tl: Timeline? = null
@@ -28,78 +31,92 @@ class KeyboardView(ctx: Context) : View(ctx) {
     var hand = 0
     var userPart = 0
     var onKey: ((Int, Boolean) -> Unit)? = null
-    /** midi -> 1 derecha, 2 izquierda (lo que suena ahora en tu parte) */
+    /** midi -> 1 derecha, 2 izquierda (lo que te toca tocar ahora) */
     val lit = HashMap<Int, Int>()
     val pressed = HashSet<Int>()
     private val p = Paint(Paint.ANTI_ALIAS_FLAG)
     private val r = RectF()
     private val touching = HashMap<Int, Int>()
+    private val kx = FloatArray(2)
+    private var whites = 52
+    private val solf = arrayOf("Do", "", "Re", "", "Mi", "Fa", "", "Sol", "", "La", "", "Si")
 
     fun setRange(a: Int, b: Int) {
         var l = a; var h = b
         while (Names.isBlack(l)) l--
         while (Names.isBlack(h)) h++
-        lo = l.coerceIn(21, 108); hi = h.coerceIn(21, 108)
+        lo = l.coerceIn(21, 108); hi = h.coerceIn(lo, 108)
+        whites = 0; for (m in lo..hi) if (!Names.isBlack(m)) whites++
         invalidate()
     }
 
-    private fun whiteCount(): Int { var n = 0; for (m in lo..hi) if (!Names.isBlack(m)) n++; return n }
-    private fun keyTop(): Float = if (falling) height * 0.55f else 0f
+    private fun keyTop(): Float = if (falling) height * 0.6f else 0f
 
-    /** Posicion horizontal (izquierda, derecha) de una tecla. */
     private fun keyX(m: Int, out: FloatArray) {
-        val ww = width.toFloat() / whiteCount()
+        val ww = width.toFloat() / max(1, whites)
         var wi = 0
         for (k in lo until m) if (!Names.isBlack(k)) wi++
         if (!Names.isBlack(m)) { out[0] = wi * ww; out[1] = (wi + 1) * ww }
-        else { val bw = ww * 0.62f; out[0] = wi * ww - bw / 2; out[1] = wi * ww + bw / 2 }
+        else { val bw = ww * 0.6f; out[0] = wi * ww - bw / 2; out[1] = wi * ww + bw / 2 }
     }
 
-    private val kx = FloatArray(2)
+    private fun handColor(h: Int): Int = if (h == 1) C.RED_HI else C.PINK
 
     override fun onDraw(c: Canvas) {
         val w = width.toFloat(); val h = height.toFloat()
         val top = keyTop()
         c.drawColor(C.BG)
         if (falling) drawFalling(c, top)
-        val ww = w / whiteCount()
+        val ww = w / max(1, whites)
         val kh = h - top
-        // blancas
+        p.shader = null
+        p.style = Paint.Style.FILL
         var wi = 0
         for (m in lo..hi) {
             if (Names.isBlack(m)) continue
             r.set(wi * ww + 1f, top, (wi + 1) * ww - 1f, h)
             val l = lit[m]
-            p.style = Paint.Style.FILL
-            p.color = when (l) { 1 -> C.RED_HI; 2 -> C.ICON_BG; else -> 0xFFEDEDEF.toInt() }
+            p.color = if (l != null) handColor(l) else 0xFFEDEDEF.toInt()
             c.drawRoundRect(r, ww * 0.12f, ww * 0.12f, p)
-            if (labels && m % 12 == 0) {
-                p.color = if (l != null) C.BG else 0xFF8A8C93.toInt()
-                p.textAlign = Paint.Align.CENTER; p.typeface = Fonts.medium; p.textSize = min(ww * 0.42f, context.dp(11f))
-                c.drawText("Do" + (m / 12 - 1), (wi + 0.5f) * ww, h - context.dp(7f), p)
+            val label = when { names == 2 -> solf[m % 12]; names == 1 && m % 12 == 0 -> "Do" + (m / 12 - 1); else -> "" }
+            if (label.isNotEmpty()) {
+                p.color = if (l != null) C.TEXT else 0xFF7C7E86.toInt()
+                p.textAlign = Paint.Align.CENTER; p.typeface = if (l != null) Fonts.bold else Fonts.medium
+                p.textSize = min(ww * (if (names == 2) 0.34f else 0.3f), context.dp(11f))
+                c.drawText(label, (wi + 0.5f) * ww, h - context.dp(6f), p)
             }
-            if (m in pressed) { p.color = if (l != null) C.TEXT else C.RED; c.drawCircle((wi + 0.5f) * ww, h - kh * 0.22f, min(ww * 0.28f, context.dp(7f)), p) }
+            if (m in pressed) { p.color = if (l != null) C.TEXT else C.RED; c.drawCircle((wi + 0.5f) * ww, h - kh * 0.3f, min(ww * 0.26f, context.dp(7f)), p) }
             wi++
         }
-        // negras
         for (m in lo..hi) {
             if (!Names.isBlack(m)) continue
             keyX(m, kx)
             r.set(kx[0], top, kx[1], top + kh * 0.62f)
             val l = lit[m]
-            p.color = when (l) { 1 -> C.RED; 2 -> 0xFF8E8F95.toInt(); else -> 0xFF101012.toInt() }
+            p.color = if (l != null) (if (l == 1) C.RED else C.PINK_DEEP) else 0xFF101012.toInt()
             c.drawRoundRect(r, ww * 0.08f, ww * 0.08f, p)
-            if (m in pressed) { p.color = C.TEXT; c.drawCircle((kx[0] + kx[1]) / 2, top + kh * 0.5f, min(ww * 0.22f, context.dp(6f)), p) }
+            if (m in pressed) { p.color = C.TEXT; c.drawCircle((kx[0] + kx[1]) / 2, top + kh * 0.48f, min(ww * 0.2f, context.dp(6f)), p) }
         }
         p.color = C.RED; c.drawRect(0f, top, w, top + context.dp(2f), p)
     }
 
+    private fun mine(staff: Int): Boolean = hand == 0 || (hand == 1 && staff == 0) || (hand == 2 && staff == 1)
+
     private fun drawFalling(c: Canvas, top: Float) {
         val t = tl ?: return
-        val span = 1920f * 1.5f   // cuanto tiempo hacia adelante se ve
+        p.style = Paint.Style.FILL
+        p.shader = null
+        // lineas guia tenues entre teclas blancas (mas visibles en cada Do)
+        for (m in lo..hi) {
+            if (Names.isBlack(m)) continue
+            keyX(m, kx)
+            p.color = if (m % 12 == 0) 0xFF2E2F35.toInt() else 0xFF17181B.toInt()
+            c.drawRect(kx[0], 0f, kx[0] + 1f, top, p)
+        }
+        val span = 1920f * 1.5f
         val pxPerTick = top / span
-        val i0 = t.firstAt(curT - 1920 * 4)
-        var i = i0
+        var i = t.firstAt(curT - 1920 * 4)
+        val rad = context.dp(4f)
         while (i < t.events.size && t.events[i].t <= curT + span) {
             val pe = t.events[i]; i++
             val e = pe.e
@@ -112,15 +129,19 @@ class KeyboardView(ctx: Context) : View(ctx) {
                 val y0 = top - (pe.t + e.sound - curT) * pxPerTick
                 if (y1 < 0 || y0 > top) continue
                 keyX(m, kx)
-                val dim = (hand == 1 && e.staff == 1) || (hand == 2 && e.staff == 0)
-                p.color = if (e.staff == 0) (if (dim) 0x66DC0000 else C.RED_HI) else (if (dim) 0x669A9CA4 else C.ICON_BG)
-                r.set(kx[0] + 2f, max(0f, y0), kx[1] - 2f, min(top, y1))
-                c.drawRoundRect(r, context.dp(4f), context.dp(4f), p)
+                val col = if (e.staff == 0) C.RED_HI else C.PINK
+                r.set(kx[0] + 1.5f, max(0f, y0), kx[1] - 1.5f, min(top, y1))
+                p.shader = LinearGradient(0f, r.top, 0f, r.bottom, lighten(col), col, Shader.TileMode.CLAMP)
+                p.alpha = if (mine(e.staff)) 255 else 80
+                c.drawRoundRect(r, rad, rad, p)
+                p.shader = null; p.alpha = 255
             }
         }
-        // lineas de octava (Do) como guia
-        p.color = 0xFF151517.toInt()
-        for (m in lo..hi) if (m % 12 == 0) { keyX(m, kx); c.drawRect(kx[0], 0f, kx[0] + 1f, top, p) }
+    }
+
+    private fun lighten(c: Int): Int {
+        val rr = min(255, ((c shr 16) and 0xFF) + 60); val g = min(255, ((c shr 8) and 0xFF) + 60); val b = min(255, (c and 0xFF) + 60)
+        return (0xFF shl 24) or (rr shl 16) or (g shl 8) or b
     }
 
     private fun keyAt(x: Float, y: Float): Int {
@@ -139,11 +160,11 @@ class KeyboardView(ctx: Context) : View(ctx) {
                 val m = keyAt(e.getX(idx), e.getY(idx))
                 if (m >= 0) { touching[e.getPointerId(idx)] = m; pressed.add(m); onKey?.invoke(m, true); invalidate() }
             }
-            MotionEvent.ACTION_UP, MotionEvent.ACTION_POINTER_UP, MotionEvent.ACTION_CANCEL -> {
+            MotionEvent.ACTION_UP, MotionEvent.ACTION_POINTER_UP -> {
                 val m = touching.remove(e.getPointerId(idx))
                 if (m != null) { pressed.remove(m); onKey?.invoke(m, false); invalidate() }
-                if (e.actionMasked == MotionEvent.ACTION_CANCEL) { for (k in touching.values) onKey?.invoke(k, false); touching.clear(); pressed.clear() }
             }
+            MotionEvent.ACTION_CANCEL -> { for (k in touching.values) { pressed.remove(k); onKey?.invoke(k, false) }; touching.clear(); invalidate() }
         }
         return true
     }
@@ -151,111 +172,119 @@ class KeyboardView(ctx: Context) : View(ctx) {
 
 /** Digitacion de la flauta dulce soprano barroca (la de plastico comun). Se indexa por la nota escrita (midi). */
 object RecorderFingering {
-    // agujeros: [pulgar, 1, 2, 3, 4, 5, 6 grande, 6 chico, 7 grande, 7 chico]; 0 abierto, 1 tapado, 2 medio pulgar (apenas abierto)
+    // agujeros: [pulgar, 1, 2, 3, 4, 5, 6 grande, 6 chico, 7 grande, 7 chico]; 0 abierto, 1 tapado, 2 medio pulgar
     private val map = HashMap<Int, IntArray>()
     private fun f(m: Int, s: String) { map[m] = IntArray(10) { when (s[it]) { 'x' -> 1; 'h' -> 2; else -> 0 } } }
     init {
-        f(60, "xxxxxxxxxx") // Do4
-        f(61, "xxxxxxxxx-") // Do#4
-        f(62, "xxxxxxxx--") // Re4
-        f(63, "xxxxxxx---") // Re#4
-        f(64, "xxxxxx----") // Mi4
-        f(65, "xxxxx-xxxx") // Fa4 (horquilla)
-        f(66, "xxxx-xxx--") // Fa#4
-        f(67, "xxxx------") // Sol4
-        f(68, "xxx-xxx---") // Sol#4
-        f(69, "xxx-------") // La4
-        f(70, "xx-xx-----") // Sib4
-        f(71, "xx--------") // Si4
-        f(72, "x-x-------") // Do5
-        f(73, "-xx-------") // Do#5
-        f(74, "--x-------") // Re5
-        f(75, "--xxxxxx--") // Re#5
-        f(76, "hxxxxx----") // Mi5
-        f(77, "hxxxx-xx--") // Fa5
-        f(78, "hxxx-x----") // Fa#5
-        f(79, "hxxx------") // Sol5
-        f(80, "hxx-x-----") // Sol#5
-        f(81, "hxx-------") // La5
-        f(82, "hxxx-xx---") // Sib5
-        f(83, "hxx-xx----") // Si5
-        f(84, "hx--xx----") // Do6
-        f(86, "hx-xx-xx--") // Re6
+        f(60, "xxxxxxxxxx"); f(61, "xxxxxxxxx-"); f(62, "xxxxxxxx--"); f(63, "xxxxxxx---"); f(64, "xxxxxx----")
+        f(65, "xxxxx-xxxx"); f(66, "xxxx-xxx--"); f(67, "xxxx------"); f(68, "xxx-xxx---"); f(69, "xxx-------")
+        f(70, "xx-xx-----"); f(71, "xx--------"); f(72, "x-x-------"); f(73, "-xx-------"); f(74, "--x-------")
+        f(75, "--xxxxxx--"); f(76, "hxxxxx----"); f(77, "hxxxx-xx--"); f(78, "hxxx-x----"); f(79, "hxxx------")
+        f(80, "hxx-x-----"); f(81, "hxx-------"); f(82, "hxxx-xx---"); f(83, "hxx-xx----"); f(84, "hx--xx----")
+        f(86, "hx-xx-xx--")
     }
     fun of(writtenMidi: Int): IntArray? = map[writtenMidi]
     const val LOW = 60
     const val HIGH = 86
 }
 
-/** Silueta de la flauta dulce de pie con sus agujeros: negro relleno = tapado, mitad = medio pulgar. */
+/**
+ * Silueta de la flauta dulce de pie, en blanco grisaceo. Agujero tapado = rojo.
+ * Al costado de cada agujero va el dedo: mano izquierda arriba (pulgar, indice, medio, anular),
+ * mano derecha abajo (indice, medio, anular, meñique).
+ */
 class FluteView(ctx: Context) : View(ctx) {
     var midi = -1
-        set(v) { field = v; invalidate() }
+        set(v) { if (field != v) { field = v; invalidate() } }
     var next = -1
-        set(v) { field = v; invalidate() }
-    var labelSp = 22f
+        set(v) { if (field != v) { field = v; invalidate() } }
+    /** Sin nombre grande de la nota (el explorador lo muestra aparte). */
+    var compact = false
+    /** Version chica para la tabla: solo flauta y nombre. */
+    var mini = false
     private val p = Paint(Paint.ANTI_ALIAS_FLAG)
     private val r = RectF()
+    private val fingers = arrayOf("pulgar", "índice", "medio", "anular", "índice", "medio", "anular", "meñique")
 
     override fun onDraw(c: Canvas) {
         val w = width.toFloat(); val h = height.toFloat()
         val u = context.dp(1f)
-        val bodyW = min(w * 0.32f, u * 46f)
-        val cx = w * 0.38f
-        val top = h * 0.04f; val bot = h * 0.97f
-        // cuerpo
+        val showName = !compact && !mini
+        val nameW = if (showName) w * 0.32f else 0f
+        val labels = !mini
+        val area = w - nameW
+        val top = h * (if (mini) 0.16f else 0.03f); val bot = h * 0.98f
+        val len = bot - top
+        val bodyW = min(area * (if (labels) 0.2f else 0.34f), len * 0.13f)
+        val cx = if (labels) nameW + area * 0.5f else w / 2
         p.style = Paint.Style.FILL
-        p.color = 0xFF2A2B2F.toInt()
-        r.set(cx - bodyW * 0.62f, top, cx + bodyW * 0.62f, top + (bot - top) * 0.2f); c.drawRoundRect(r, bodyW * 0.5f, bodyW * 0.5f, p)
-        r.set(cx - bodyW / 2, top + (bot - top) * 0.12f, cx + bodyW / 2, bot - (bot - top) * 0.06f); c.drawRoundRect(r, bodyW * 0.3f, bodyW * 0.3f, p)
-        r.set(cx - bodyW * 0.6f, bot - (bot - top) * 0.1f, cx + bodyW * 0.6f, bot); c.drawRoundRect(r, bodyW * 0.3f, bodyW * 0.3f, p)
-        // ventana de la boquilla
-        p.color = C.BG
-        r.set(cx - bodyW * 0.28f, top + (bot - top) * 0.13f, cx + bodyW * 0.28f, top + (bot - top) * 0.165f); c.drawRect(r, p)
+        p.shader = null
+        p.color = C.FLUTE
+        r.set(cx - bodyW * 0.6f, top, cx + bodyW * 0.6f, top + len * 0.17f); c.drawRoundRect(r, bodyW * 0.45f, bodyW * 0.45f, p)
+        r.set(cx - bodyW / 2, top + len * 0.1f, cx + bodyW / 2, bot - len * 0.05f); c.drawRoundRect(r, bodyW * 0.25f, bodyW * 0.25f, p)
+        r.set(cx - bodyW * 0.58f, bot - len * 0.09f, cx + bodyW * 0.58f, bot); c.drawRoundRect(r, bodyW * 0.3f, bodyW * 0.3f, p)
+        p.color = 0xFFB4B6BB.toInt()
+        c.drawRect(cx - bodyW * 0.5f, top + len * 0.165f, cx + bodyW * 0.5f, top + len * 0.175f, p)
+        c.drawRect(cx - bodyW * 0.5f, bot - len * 0.095f, cx + bodyW * 0.5f, bot - len * 0.085f, p)
+        p.color = 0xFF3A3B40.toInt()
+        c.drawRect(cx - bodyW * 0.26f, top + len * 0.11f, cx + bodyW * 0.26f, top + len * 0.14f, p)
         val holes = if (midi >= 0) RecorderFingering.of(midi) else null
-        val rr = bodyW * 0.22f
-        val y0 = top + (bot - top) * 0.27f
-        val step = (bot - top) * 0.082f
-        // pulgar (atras): se dibuja al costado
-        drawHole(c, cx - bodyW * 0.95f, y0 - step * 0.6f, rr * 0.9f, holes?.get(0) ?: -1, true)
-        for (i in 1..5) drawHole(c, cx, y0 + (i - 1) * step + (if (i > 3) step * 0.35f else 0f), rr, holes?.get(i) ?: -1, false)
-        // 6 y 7 dobles
+        val rr = bodyW * 0.24f
+        val y0 = top + len * 0.25f
+        val step = len * 0.083f
+        val ys = FloatArray(8)
+        ys[0] = y0 - step * 0.55f
+        for (i in 1..3) ys[i] = y0 + (i - 1) * step
+        for (i in 4..7) ys[i] = y0 + (i - 1) * step + step * 0.45f
+        drawHole(c, cx - bodyW * 0.95f, ys[0], rr * 0.85f, holes?.get(0) ?: -1)
+        for (i in 1..5) drawHole(c, cx, ys[i], rr, holes?.get(i) ?: -1)
         for (k in 0..1) {
-            val y = y0 + (5 + k) * step + step * 0.35f
-            drawHole(c, cx - rr * 0.55f, y, rr * 0.62f, holes?.get(6 + k * 2) ?: -1, false)
-            drawHole(c, cx + rr * 0.75f, y, rr * 0.45f, holes?.get(7 + k * 2) ?: -1, false)
+            drawHole(c, cx - rr * 0.5f, ys[6 + k], rr * 0.62f, holes?.get(6 + k * 2) ?: -1)
+            drawHole(c, cx + rr * 0.78f, ys[6 + k], rr * 0.45f, holes?.get(7 + k * 2) ?: -1)
         }
-        // guia de manos
-        p.color = C.DIM; p.textSize = u * 10f; p.typeface = Fonts.medium; p.textAlign = Paint.Align.LEFT
-        c.drawText("pulgar", cx - bodyW * 1.5f, y0 - step * 1.25f, p)
-        c.drawText("izq.", cx + bodyW * 0.8f, y0 + step * 0.9f, p)
-        c.drawText("der.", cx + bodyW * 0.8f, y0 + step * 4.6f, p)
-        // nombre de la nota
+        if (labels) {
+            p.typeface = Fonts.medium; p.textSize = min(u * 10.5f, step * 0.42f)
+            val idx = intArrayOf(0, 1, 2, 3, 4, 5, 6, 8)
+            for (i in 0..7) {
+                val closed = (holes?.get(idx[i]) ?: 0) != 0
+                p.color = if (closed) C.TEXT else C.DIM
+                if (i == 0) { p.textAlign = Paint.Align.RIGHT; c.drawText(fingers[0], cx - bodyW * 0.95f - rr - u * 3f, ys[0] + p.textSize * 0.35f, p) }
+                else { p.textAlign = Paint.Align.LEFT; c.drawText(fingers[i], cx + bodyW * 0.75f + (if (i >= 6) rr * 0.5f else 0f), ys[i] + p.textSize * 0.35f, p) }
+            }
+            p.textAlign = Paint.Align.RIGHT; p.typeface = Fonts.bold; p.textSize = min(u * 10f, step * 0.4f)
+            p.color = C.RED_HI
+            val bx = cx - bodyW * 0.75f
+            c.drawText("IZQ.", bx, (ys[1] + ys[3]) / 2 + p.textSize * 0.4f, p)
+            c.drawText("DER.", bx, (ys[4] + ys[7]) / 2 + p.textSize * 0.4f, p)
+        }
         p.textAlign = Paint.Align.CENTER
-        if (midi >= 0) {
-            p.color = C.TEXT; p.typeface = Fonts.bold; p.textSize = u * labelSp
-            c.drawText(Names.pitchClass(midi), w * 0.82f, h * 0.18f, p)
-            p.color = C.MUTED; p.typeface = Fonts.medium; p.textSize = u * 11f
-            c.drawText(if (holes == null) "fuera de rango" else Names.withOctave(midi), w * 0.82f, h * 0.18f + u * 16f, p)
+        if (mini && midi >= 0) {
+            p.color = C.TEXT; p.typeface = Fonts.bold; p.textSize = u * 14f
+            c.drawText(Names.withOctave(midi), w / 2, h * 0.1f, p)
         }
-        if (next >= 0) {
-            p.color = C.DIM; p.typeface = Fonts.medium; p.textSize = u * 11f
-            c.drawText("luego", w * 0.82f, h * 0.36f, p)
-            p.color = C.MUTED; p.typeface = Fonts.bold; p.textSize = u * 16f
-            c.drawText(Names.pitchClass(next), w * 0.82f, h * 0.36f + u * 18f, p)
+        if (showName && midi >= 0) {
+            val nx = nameW * 0.5f
+            p.color = C.TEXT; p.typeface = Fonts.bold; p.textSize = u * 30f
+            c.drawText(Names.pitchClass(midi), nx, h * 0.2f, p)
+            p.color = C.MUTED; p.typeface = Fonts.medium; p.textSize = u * 11f
+            c.drawText(if (holes == null) "fuera de rango" else Names.withOctave(midi), nx, h * 0.2f + u * 16f, p)
+        }
+        if (showName && next >= 0) {
+            val nx = nameW * 0.5f
+            p.color = C.DIM; p.typeface = Fonts.title; p.textSize = u * 9f
+            c.drawText("LUEGO", nx, h * 0.42f, p)
+            p.color = C.MUTED; p.typeface = Fonts.bold; p.textSize = u * 18f
+            c.drawText(Names.pitchClass(next), nx, h * 0.42f + u * 20f, p)
         }
     }
 
-    private fun drawHole(c: Canvas, x: Float, y: Float, rad: Float, state: Int, thumb: Boolean) {
+    private fun drawHole(c: Canvas, x: Float, y: Float, rad: Float, state: Int) {
         p.style = Paint.Style.FILL
-        p.color = C.BG
+        p.color = 0xFF2B2C31.toInt()
         c.drawCircle(x, y, rad, p)
         when (state) {
-            1 -> { p.color = if (thumb) C.ICON_BG else C.TEXT; c.drawCircle(x, y, rad * 0.86f, p) }
-            2 -> { p.color = C.ICON_BG; r.set(x - rad * 0.86f, y - rad * 0.86f, x + rad * 0.86f, y + rad * 0.86f); c.drawArc(r, 90f, 180f, true, p) }
+            1 -> { p.color = C.RED_HI; c.drawCircle(x, y, rad * 0.92f, p) }
+            2 -> { p.color = C.RED_HI; r.set(x - rad * 0.92f, y - rad * 0.92f, x + rad * 0.92f, y + rad * 0.92f); c.drawArc(r, 90f, 180f, true, p) }
         }
-        p.style = Paint.Style.STROKE; p.strokeWidth = context.dp(1.2f); p.color = C.MUTED
-        c.drawCircle(x, y, rad, p)
-        p.style = Paint.Style.FILL
     }
 }

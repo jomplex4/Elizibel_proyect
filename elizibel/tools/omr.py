@@ -21,7 +21,13 @@ STEPS = [0, 2, 4, 5, 7, 9, 11]
 NAMES = "CDEFGAB"
 
 
+EXTRA_FONTS = []
+LINE_TOL = 0.35
+
+
 def is_music_font(fn):
+    if any(fn.endswith(x) for x in EXTRA_FONTS):
+        return True
     fn = fn.split('+')[-1]
     return any(k in fn for k in ("Leland", "MScore", "Bravura")) and "Text" not in fn
 
@@ -82,7 +88,7 @@ def find_staves(pg, sp_hint=None):
             cand = [y + k * d for k in range(5)]
             got = []
             for cy in cand:
-                m = [yy for yy in ys if abs(yy - cy) < 0.35 and yy not in used]
+                m = [yy for yy in ys if abs(yy - cy) < LINE_TOL and yy not in used]
                 if not m:
                     break
                 got.append(m[0])
