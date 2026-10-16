@@ -1,0 +1,11 @@
+id: f_santos
+title: Cuando los santos marchan
+composer: Espiritual tradicional
+arr: Versión sencilla en Sol mayor
+inst: flute
+group: learn
+level: 2
+time: 4/4
+key: 1
+bpm: 110
+mel: q:r q:G4 q:B4 q:C5 | w:D5 | q:r q:G4 q:B4 q:C5 | w:D5 | q:r q:G4 q:B4 q:C5 | h:D5 h:B4 | h:G4 h:B4 | w:A4 | q:r q:B4 q:B4 q:A4 | h.:G4 q:G4 | h:B4 h:D5 | h:D5 h:C5 | q:r q:B4 q:C5 q:D5 | h:B4 h:G4 | h:A4 h:A4 | w:G4

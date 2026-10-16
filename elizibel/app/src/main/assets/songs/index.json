@@ -1,0 +1,164 @@
+[
+{
+"id": "listen",
+"title": "Listen to Your Heart",
+"composer": "Roxette",
+"inst": "piano",
+"level": 3,
+"group": "main",
+"arr": "Piano de la canción · banda de fondo"
+},
+{
+"id": "icarus",
+"title": "Icarus",
+"composer": "Tony Ann",
+"inst": "piano",
+"level": 4,
+"group": "main",
+"arr": "Arr. Dave"
+},
+{
+"id": "mariage",
+"title": "Mariage d'Amour",
+"composer": "Paul de Senneville",
+"inst": "piano",
+"level": 3,
+"group": "main",
+"arr": "Arr. Toms Mucenieks"
+},
+{
+"id": "interstellar",
+"title": "Interstellar",
+"composer": "Hans Zimmer",
+"inst": "piano",
+"level": 5,
+"group": "main",
+"arr": "Main Theme · Arr. Gabriel Piano"
+},
+{
+"id": "experience",
+"title": "Experience",
+"composer": "Ludovico Einaudi",
+"inst": "piano",
+"level": 4,
+"group": "main",
+"arr": "Dos pianos"
+},
+{
+"id": "someone",
+"title": "Someone You Loved",
+"composer": "Lewis Capaldi",
+"inst": "piano",
+"level": 2,
+"group": "main",
+"arr": "Acompañamiento · Arr. F. Pastori"
+},
+{
+"id": "comptine",
+"title": "Comptine d'un autre été",
+"composer": "Yann Tiersen",
+"inst": "flute",
+"level": 2,
+"group": "main",
+"arr": "Melodía de la versión de Space Note"
+},
+{
+"id": "greensleeves",
+"title": "Greensleeves",
+"composer": "Anónimo inglés",
+"inst": "flute",
+"level": 2,
+"group": "main",
+"arr": "Flauta 1 de la partitura enviada"
+},
+{
+"id": "p_estrellita",
+"title": "Estrellita, ¿dónde estás?",
+"composer": "Tradicional",
+"inst": "piano",
+"level": 1,
+"group": "learn",
+"arr": "Con bajo sencillo"
+},
+{
+"id": "p_himno",
+"title": "Himno a la alegría",
+"composer": "Ludwig van Beethoven",
+"inst": "piano",
+"level": 1,
+"group": "learn",
+"arr": "Con bajo sencillo"
+},
+{
+"id": "p_canon",
+"title": "Canon de Pachelbel",
+"composer": "Johann Pachelbel",
+"inst": "piano",
+"level": 2,
+"group": "learn",
+"arr": "Tema principal con el bajo del canon"
+},
+{
+"id": "p_elisa",
+"title": "Para Elisa (inicio)",
+"composer": "Ludwig van Beethoven",
+"inst": "piano",
+"level": 2,
+"group": "learn",
+"arr": "Primera frase"
+},
+{
+"id": "p_morning",
+"title": "La mañana (Morning Mood)",
+"composer": "Edvard Grieg",
+"inst": "piano",
+"level": 2,
+"group": "learn",
+"arr": "Inicio sencillo en Do mayor"
+},
+{
+"id": "f_corderito",
+"title": "María tenía un corderito",
+"composer": "Tradicional",
+"inst": "flute",
+"level": 1,
+"group": "learn",
+"arr": "Práctica · notas Si, La y Sol"
+},
+{
+"id": "f_estrellita",
+"title": "Estrellita, ¿dónde estás?",
+"composer": "Tradicional",
+"inst": "flute",
+"level": 1,
+"group": "learn",
+"arr": "En Sol mayor"
+},
+{
+"id": "f_auclair",
+"title": "Au clair de la lune",
+"composer": "Tradicional francesa",
+"inst": "flute",
+"level": 1,
+"group": "learn",
+"arr": "En Sol mayor"
+},
+{
+"id": "f_himno",
+"title": "Himno a la alegría",
+"composer": "Ludwig van Beethoven",
+"inst": "flute",
+"level": 1,
+"group": "learn",
+"arr": "En Sol mayor"
+},
+{
+"id": "f_santos",
+"title": "Cuando los santos marchan",
+"composer": "Espiritual tradicional",
+"inst": "flute",
+"level": 2,
+"group": "learn",
+"arr": "Versión sencilla en Sol mayor"
+}
+]

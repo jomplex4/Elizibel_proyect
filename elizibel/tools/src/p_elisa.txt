@@ -1,0 +1,13 @@
+id: p_elisa
+title: Para Elisa (inicio)
+composer: Ludwig van Beethoven
+arr: Primera frase
+inst: piano
+group: learn
+level: 2
+time: 3/8
+key: 0
+bpm: 66
+pickup: 240
+rh: s:E5 s:D#5 | s:E5 s:D#5 s:E5 s:B4 s:D5 s:C5 | e:A4 s:r s:C4 s:E4 s:A4 | e:B4 s:r s:E4 s:G#4 s:B4 | e:C5 s:r s:E4 s:E5 s:D#5 | s:E5 s:D#5 s:E5 s:B4 s:D5 s:C5 | e:A4 s:r s:C4 s:E4 s:A4 | e:B4 s:r s:E4 s:C5 s:B4 | q.:A4
+lh: e:r | q.:r | s:A2 s:E3 s:A3 s:r e:r | s:E2 s:E3 s:G#3 s:r e:r | s:A2 s:E3 s:A3 s:r e:r | q.:r | s:A2 s:E3 s:A3 s:r e:r | s:E2 s:E3 s:G#3 s:r e:r | s:A2 s:E3 s:A3 s:r e:r

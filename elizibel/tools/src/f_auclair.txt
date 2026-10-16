@@ -1,0 +1,11 @@
+id: f_auclair
+title: Au clair de la lune
+composer: Tradicional francesa
+arr: En Sol mayor
+inst: flute
+group: learn
+level: 1
+time: 4/4
+key: 1
+bpm: 96
+mel: q:G4 q:G4 q:G4 q:A4 | h:B4 h:A4 | q:G4 q:B4 q:A4 q:A4 | w:G4 | q:G4 q:G4 q:G4 q:A4 | h:B4 h:A4 | q:G4 q:B4 q:A4 q:A4 | w:G4 | q:A4 q:A4 q:A4 q:A4 | h:E4 h:E4 | q:A4 q:G4 q:F#4 q:E4 | w:D4 | q:G4 q:G4 q:G4 q:A4 | h:B4 h:A4 | q:G4 q:B4 q:A4 q:A4 | w:G4

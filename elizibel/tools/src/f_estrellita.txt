@@ -1,0 +1,11 @@
+id: f_estrellita
+title: Estrellita, ¿dónde estás?
+composer: Tradicional
+arr: En Sol mayor
+inst: flute
+group: learn
+level: 1
+time: 4/4
+key: 1
+bpm: 96
+mel: q:G4 q:G4 q:D5 q:D5 | q:E5 q:E5 h:D5 | q:C5 q:C5 q:B4 q:B4 | q:A4 q:A4 h:G4 | q:D5 q:D5 q:C5 q:C5 | q:B4 q:B4 h:A4 | q:D5 q:D5 q:C5 q:C5 | q:B4 q:B4 h:A4 | q:G4 q:G4 q:D5 q:D5 | q:E5 q:E5 h:D5 | q:C5 q:C5 q:B4 q:B4 | q:A4 q:A4 h:G4

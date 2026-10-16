@@ -1,0 +1,12 @@
+id: p_morning
+title: La mañana (Morning Mood)
+composer: Edvard Grieg
+arr: Inicio sencillo en Do mayor
+inst: piano
+group: learn
+level: 2
+time: 6/8
+key: 0
+bpm: 56
+rh: e:G5 e:E5 e:D5 e:C5 e:D5 e:E5 | e:G5 e:E5 e:D5 e:C5 e:D5 e:E5 | e:D5 e:E5 e:G5 e:E5 e:G5 e:A5 | e:E5 e:A5 e:G5 e:E5 q:D5 | h.:C5
+lh: h.:C3+G3 | h.:C3+G3 | h.:G2+D3 | h.:A2+E3 | h.:C3+G3

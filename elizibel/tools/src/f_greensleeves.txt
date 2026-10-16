@@ -1,0 +1,12 @@
+id: greensleeves
+title: Greensleeves
+composer: Anónimo inglés
+arr: Flauta 1 de la partitura enviada
+inst: flute
+group: main
+level: 2
+time: 6/8
+key: 0
+bpm: 66
+pickup: 240
+mel: e:A4 | q:C5 e:D5 e.:E5 s:F5 e:E5 | q:D5 e:B4 e.:G4 s:A4 e:B4 | q:C5 e:A4 e.:A4 s:G#4 e:A4 | q:B4 e:G#4 q:E4 e:A4 | q:C5 e:D5 e.:E5 s:F5 e:E5 | q:D5 e:B4 e.:G4 s:A4 e:B4 | e.:C5 s:B4 e:A4 e:G#4 e:F#4 e:G#4 | q.:A4 q.:A4 | q.:G5 e.:G5 s:F#5 e:E5 | q:D5 e:B4 e.:G4 s:A4 e:B4 | q:C5 e:A4 e.:A4 s:G#4 e:A4 | q:B4 e:G#4 q.:E4 | q.:G5 e.:G5 s:F#5 e:E5 | q:D5 e:B4 e.:G4 s:A4 e:B4 | e.:C5 s:B4 e:A4 e:G#4 e:F#4 e:G#4 | q.:A4 q.:A4

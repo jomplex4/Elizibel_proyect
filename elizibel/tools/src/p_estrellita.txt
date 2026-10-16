@@ -1,0 +1,12 @@
+id: p_estrellita
+title: Estrellita, ¿dónde estás?
+composer: Tradicional
+arr: Con bajo sencillo
+inst: piano
+group: learn
+level: 1
+time: 4/4
+key: 0
+bpm: 96
+rh: q:C4 q:C4 q:G4 q:G4 | q:A4 q:A4 h:G4 | q:F4 q:F4 q:E4 q:E4 | q:D4 q:D4 h:C4 | q:G4 q:G4 q:F4 q:F4 | q:E4 q:E4 h:D4 | q:G4 q:G4 q:F4 q:F4 | q:E4 q:E4 h:D4 | q:C4 q:C4 q:G4 q:G4 | q:A4 q:A4 h:G4 | q:F4 q:F4 q:E4 q:E4 | q:D4 q:D4 h:C4
+lh: w:C3 | h:F3 h:C3 | h:F3 h:C3 | h:G3 h:C3 | h:C3 h:F3 | h:C3 h:G3 | h:C3 h:F3 | h:C3 h:G3 | w:C3 | h:F3 h:C3 | h:F3 h:C3 | h:G3 h:C3

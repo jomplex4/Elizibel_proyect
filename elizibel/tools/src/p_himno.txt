@@ -1,0 +1,12 @@
+id: p_himno
+title: Himno a la alegría
+composer: Ludwig van Beethoven
+arr: Con bajo sencillo
+inst: piano
+group: learn
+level: 1
+time: 4/4
+key: 0
+bpm: 100
+rh: q:E4 q:E4 q:F4 q:G4 | q:G4 q:F4 q:E4 q:D4 | q:C4 q:C4 q:D4 q:E4 | q.:E4 e:D4 h:D4 | q:E4 q:E4 q:F4 q:G4 | q:G4 q:F4 q:E4 q:D4 | q:C4 q:C4 q:D4 q:E4 | q.:D4 e:C4 h:C4
+lh: w:C3 | w:G2 | w:C3 | w:G2 | w:C3 | w:G2 | w:C3 | h:G2 h:C3

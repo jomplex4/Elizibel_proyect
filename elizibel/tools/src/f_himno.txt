@@ -1,0 +1,11 @@
+id: f_himno
+title: Himno a la alegría
+composer: Ludwig van Beethoven
+arr: En Sol mayor
+inst: flute
+group: learn
+level: 1
+time: 4/4
+key: 1
+bpm: 100
+mel: q:B4 q:B4 q:C5 q:D5 | q:D5 q:C5 q:B4 q:A4 | q:G4 q:G4 q:A4 q:B4 | q.:B4 e:A4 h:A4 | q:B4 q:B4 q:C5 q:D5 | q:D5 q:C5 q:B4 q:A4 | q:G4 q:G4 q:A4 q:B4 | q.:A4 e:G4 h:G4

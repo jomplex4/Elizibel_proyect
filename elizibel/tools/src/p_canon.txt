@@ -1,0 +1,12 @@
+id: p_canon
+title: Canon de Pachelbel
+composer: Johann Pachelbel
+arr: Tema principal con el bajo del canon
+inst: piano
+group: learn
+level: 2
+time: 4/4
+key: 2
+bpm: 66
+rh: h:F#5 h:E5 | h:D5 h:C#5 | h:B4 h:A4 | h:B4 h:C#5 | h:D5 h:C#5 | h:B4 h:A4 | h:G4 h:F#4 | h:G4 h:E4 | h:F#5 h:E5 | h:D5 h:C#5 | h:B4 h:A4 | h:B4 h:C#5 | w:D5
+lh: h:D3 h:A2 | h:B2 h:F#2 | h:G2 h:D2 | h:G2 h:A2 | h:D3 h:A2 | h:B2 h:F#2 | h:G2 h:D2 | h:G2 h:A2 | h:D3 h:A2 | h:B2 h:F#2 | h:G2 h:D2 | h:G2 h:A2 | w:D3

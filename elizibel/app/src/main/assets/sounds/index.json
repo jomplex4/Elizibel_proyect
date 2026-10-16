@@ -1,0 +1,353 @@
+{
+"rate": 32000,
+"inst": {
+"piano": [
+{
+"file": "p21.ogg",
+"root": 21,
+"ls": -1,
+"le": -1,
+"peak": 0.432620644569397,
+"gain": 1.965
+},
+{
+"file": "p33.ogg",
+"root": 33,
+"ls": -1,
+"le": -1,
+"peak": 0.3623524606227875,
+"gain": 1.965
+},
+{
+"file": "p45.ogg",
+"root": 45,
+"ls": -1,
+"le": -1,
+"peak": 0.34480947256088257,
+"gain": 1.965
+},
+{
+"file": "p57.ogg",
+"root": 57,
+"ls": -1,
+"le": -1,
+"peak": 0.238235741853714,
+"gain": 1.965
+},
+{
+"file": "p69.ogg",
+"root": 69,
+"ls": -1,
+"le": -1,
+"peak": 0.25130921602249146,
+"gain": 1.965
+},
+{
+"file": "p81.ogg",
+"root": 81,
+"ls": -1,
+"le": -1,
+"peak": 0.22151441872119904,
+"gain": 1.965
+},
+{
+"file": "p93.ogg",
+"root": 93,
+"ls": -1,
+"le": -1,
+"peak": 0.16493642330169678,
+"gain": 1.965
+},
+{
+"file": "p105.ogg",
+"root": 105,
+"ls": -1,
+"le": -1,
+"peak": 0.12770560383796692,
+"gain": 1.965
+},
+{
+"file": "p24.ogg",
+"root": 24,
+"ls": -1,
+"le": -1,
+"peak": 0.38533714413642883,
+"gain": 1.965
+},
+{
+"file": "p36.ogg",
+"root": 36,
+"ls": -1,
+"le": -1,
+"peak": 0.2692371606826782,
+"gain": 1.965
+},
+{
+"file": "p48.ogg",
+"root": 48,
+"ls": -1,
+"le": -1,
+"peak": 0.3657541275024414,
+"gain": 1.965
+},
+{
+"file": "p60.ogg",
+"root": 60,
+"ls": -1,
+"le": -1,
+"peak": 0.36677074432373047,
+"gain": 1.965
+},
+{
+"file": "p72.ogg",
+"root": 72,
+"ls": -1,
+"le": -1,
+"peak": 0.13775628805160522,
+"gain": 1.965
+},
+{
+"file": "p84.ogg",
+"root": 84,
+"ls": -1,
+"le": -1,
+"peak": 0.2786300480365753,
+"gain": 1.965
+},
+{
+"file": "p96.ogg",
+"root": 96,
+"ls": -1,
+"le": -1,
+"peak": 0.2028697431087494,
+"gain": 1.965
+},
+{
+"file": "p108.ogg",
+"root": 108,
+"ls": -1,
+"le": -1,
+"peak": 0.11572691798210144,
+"gain": 1.965
+},
+{
+"file": "p27.ogg",
+"root": 27,
+"ls": -1,
+"le": -1,
+"peak": 0.4207865595817566,
+"gain": 1.965
+},
+{
+"file": "p39.ogg",
+"root": 39,
+"ls": -1,
+"le": -1,
+"peak": 0.3647375702857971,
+"gain": 1.965
+},
+{
+"file": "p51.ogg",
+"root": 51,
+"ls": -1,
+"le": -1,
+"peak": 0.3819485902786255,
+"gain": 1.965
+},
+{
+"file": "p63.ogg",
+"root": 63,
+"ls": -1,
+"le": -1,
+"peak": 0.41115468740463257,
+"gain": 1.965
+},
+{
+"file": "p75.ogg",
+"root": 75,
+"ls": -1,
+"le": -1,
+"peak": 0.1793951541185379,
+"gain": 1.965
+},
+{
+"file": "p87.ogg",
+"root": 87,
+"ls": -1,
+"le": -1,
+"peak": 0.28855055570602417,
+"gain": 1.965
+},
+{
+"file": "p99.ogg",
+"root": 99,
+"ls": -1,
+"le": -1,
+"peak": 0.10636076331138611,
+"gain": 1.965
+},
+{
+"file": "p30.ogg",
+"root": 30,
+"ls": -1,
+"le": -1,
+"peak": 0.39110201597213745,
+"gain": 1.965
+},
+{
+"file": "p42.ogg",
+"root": 42,
+"ls": -1,
+"le": -1,
+"peak": 0.3362623155117035,
+"gain": 1.965
+},
+{
+"file": "p54.ogg",
+"root": 54,
+"ls": -1,
+"le": -1,
+"peak": 0.27528661489486694,
+"gain": 1.965
+},
+{
+"file": "p66.ogg",
+"root": 66,
+"ls": -1,
+"le": -1,
+"peak": 0.30130475759506226,
+"gain": 1.965
+},
+{
+"file": "p78.ogg",
+"root": 78,
+"ls": -1,
+"le": -1,
+"peak": 0.25468140840530396,
+"gain": 1.965
+},
+{
+"file": "p90.ogg",
+"root": 90,
+"ls": -1,
+"le": -1,
+"peak": 0.1944790482521057,
+"gain": 1.965
+},
+{
+"file": "p102.ogg",
+"root": 102,
+"ls": -1,
+"le": -1,
+"peak": 0.19610872864723206,
+"gain": 1.965
+}
+],
+"flute": [
+{
+"file": "f82.ogg",
+"root": 82,
+"ls": 22400,
+"le": 70396,
+"cents": 7.0,
+"src": "SopRecorder_Sus_A#4_rr1_Main.wav"
+},
+{
+"file": "f94.ogg",
+"root": 94,
+"ls": 22400,
+"le": 70396,
+"cents": 11.9,
+"src": "SopRecorder_Sus_A#5_rr1_Main.wav"
+},
+{
+"file": "f72.ogg",
+"root": 72,
+"ls": 22400,
+"le": 70389,
+"cents": 0.7,
+"src": "SopRecorder_Sus_C4_rr1_Main.wav"
+},
+{
+"file": "f84.ogg",
+"root": 84,
+"ls": 22400,
+"le": 70372,
+"cents": 2.4,
+"src": "SopRecorder_Sus_C5_rr1_Main.wav"
+},
+{
+"file": "f96.ogg",
+"root": 96,
+"ls": 22400,
+"le": 70399,
+"cents": 10.2,
+"src": "SopRecorder_Sus_C6_rr1_Main.wav"
+},
+{
+"file": "f74.ogg",
+"root": 74,
+"ls": 22400,
+"le": 70374,
+"cents": 0.9,
+"src": "SopRecorder_Sus_D4_rr1_Main.wav"
+},
+{
+"file": "f86.ogg",
+"root": 86,
+"ls": 22400,
+"le": 70373,
+"cents": 2.9,
+"src": "SopRecorder_Sus_D5_rr1_Main.wav"
+},
+{
+"file": "f76.ogg",
+"root": 76,
+"ls": 22400,
+"le": 70370,
+"cents": 10.0,
+"src": "SopRecorder_Sus_E4_rr1_Main.wav"
+},
+{
+"file": "f88.ogg",
+"root": 88,
+"ls": 22400,
+"le": 70390,
+"cents": 4.9,
+"src": "SopRecorder_Sus_E5_rr1_Main.wav"
+},
+{
+"file": "f78.ogg",
+"root": 78,
+"ls": 22400,
+"le": 70386,
+"cents": 11.4,
+"src": "SopRecorder_Sus_F#4_rr1_Main.wav"
+},
+{
+"file": "f90.ogg",
+"root": 90,
+"ls": 22400,
+"le": 70392,
+"cents": 4.2,
+"src": "SopRecorder_Sus_F#5_rr1_Main.wav"
+},
+{
+"file": "f80.ogg",
+"root": 80,
+"ls": 22400,
+"le": 70384,
+"cents": 3.5,
+"src": "SopRecorder_Sus_G#4_rr1_Main.wav"
+},
+{
+"file": "f91.ogg",
+"root": 91,
+"ls": 22400,
+"le": 70389,
+"cents": 7.0,
+"src": "SopRecorder_Sus_G5_rr1_Main.wav"
+}
+]
+}
+}
