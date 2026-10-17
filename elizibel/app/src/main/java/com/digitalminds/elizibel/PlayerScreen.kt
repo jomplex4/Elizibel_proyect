@@ -200,31 +200,31 @@ class PlayerScreen(private val host: Host, private val song: Song) : FrameLayout
         back.tap { host.closePlayer() }
         left.addView(back, lp(ctx.dpi(36f), ctx.dpi(40f)))
         val title = label(ctx, song.title.uppercase(), 11f, C.TEXT, Fonts.title)
-        title.maxLines = 2; title.ellipsize = android.text.TextUtils.TruncateAt.END
-        left.addView(title, lp(ctx.dpi(if (flute) 230f else 150f), WRAP))
-        if (!flute) {
-            handsBtn.setText(handShort[hand])
-            handsBtn.tap { dropdown(handsBtn, handItems, hand) { setHand(it) } }
-            left.addView(handsBtn, lp(WRAP, WRAP).also { it.marginStart = ctx.dpi(6f) })
-        }
+        title.maxLines = 1; title.ellipsize = android.text.TextUtils.TruncateAt.END
+        left.addView(title, lp(ctx.dpi(230f), WRAP))
         bar.addView(left, LayoutParams(WRAP, MATCH, Gravity.START or Gravity.CENTER_VERTICAL).also { it.marginStart = ctx.dpi(2f) })
         val center = LinearLayout(ctx)
         center.gravity = Gravity.CENTER
         val restart = TransportIcon(ctx, false)
         restart.tap { seekTo(if (loopA >= 0) loopA else 0f) }
-        center.addView(restart, lp(ctx.dpi(34f), ctx.dpi(34f)))
+        center.addView(restart, lp(ctx.dpi(28f), ctx.dpi(28f)))
         skipBack.seconds = skipSec; skipFwd.seconds = skipSec
         skipBack.tap { skip(-1) }
         skipFwd.tap { skip(1) }
-        center.addView(skipBack, lp(ctx.dpi(38f), ctx.dpi(38f)).also { it.marginStart = ctx.dpi(8f) })
+        center.addView(skipBack, lp(ctx.dpi(32f), ctx.dpi(32f)).also { it.marginStart = ctx.dpi(8f) })
         playBtn.tap { if (playing) pause() else play() }
-        center.addView(playBtn, lp(ctx.dpi(44f), ctx.dpi(44f)).also { it.setMargins(ctx.dpi(10f), 0, ctx.dpi(10f), 0) })
-        center.addView(skipFwd, lp(ctx.dpi(38f), ctx.dpi(38f)))
+        center.addView(playBtn, lp(ctx.dpi(36f), ctx.dpi(36f)).also { it.setMargins(ctx.dpi(10f), 0, ctx.dpi(10f), 0) })
+        center.addView(skipFwd, lp(ctx.dpi(32f), ctx.dpi(32f)))
         loopIcon.tap { pickLoop() }
-        center.addView(loopIcon, lp(ctx.dpi(34f), ctx.dpi(34f)).also { it.marginStart = ctx.dpi(8f) })
+        center.addView(loopIcon, lp(ctx.dpi(28f), ctx.dpi(28f)).also { it.marginStart = ctx.dpi(8f) })
         bar.addView(center, LayoutParams(WRAP, MATCH, Gravity.CENTER))
         val right = LinearLayout(ctx)
         right.gravity = Gravity.CENTER_VERTICAL
+        if (!flute) {
+            handsBtn.setText(handShort[hand])
+            handsBtn.tap { dropdown(handsBtn, handItems, hand) { setHand(it) } }
+            right.addView(handsBtn, lp(WRAP, WRAP).also { it.marginEnd = ctx.dpi(4f) })
+        }
         val mb = FrameLayout(ctx)
         metroBtn.color = C.MUTED
         mb.addView(metroBtn, LayoutParams(ctx.dpi(24f), ctx.dpi(24f), Gravity.CENTER))
@@ -235,7 +235,7 @@ class PlayerScreen(private val host: Host, private val song: Song) : FrameLayout
         gear.tap { settings() }
         right.addView(gear, lp(ctx.dpi(42f), ctx.dpi(42f)))
         bar.addView(right, LayoutParams(WRAP, MATCH, Gravity.END or Gravity.CENTER_VERTICAL).also { it.marginEnd = ctx.dpi(6f) })
-        col.addView(bar, lp(MATCH, ctx.dpi(50f)))
+        col.addView(bar, lp(MATCH, ctx.dpi(42f)))
 
         score.tl = tl
         score.showNames = false
@@ -363,23 +363,29 @@ class PlayerScreen(private val host: Host, private val song: Song) : FrameLayout
         return song.bpmAt(pm.index) * speed / 100f * 480f / 60000f
     }
 
+    /** Cuenta previa: tres negras (tan, tan, tin) siempre al tiempo de la cancion. */
+    private val PRE = 1440f
+    private var preBeat = -1
+
     fun play() {
         if (playing) return
         if (curT >= tl.total - 1) seekTo(if (loopA >= 0) loopA else 0f)
         playing = true
         playBtn.playing = true
         lastMs = SystemClock.uptimeMillis()
-        // al empezar la cancion siempre hay cuenta (tan, tan, tin); al reanudar, solo si esta activada
-        val atStart = curT <= 1f || (loopA >= 0 && abs(curT - loopA) < 1f)
-        if (atStart || countIn) { countdown = 3; countdownBeat() } else handler.post(frame)
+        val atStart = curT <= 1f || (loopA >= 0 && curT <= loopA + 1f)
+        if (atStart) {
+            // al empezar: la partitura avanza en blanco tres negras mientras suena la cuenta
+            curT = (if (loopA >= 0) loopA else 0f) - PRE; preBeat = -1
+            handler.post(frame)
+        } else if (countIn) { countdown = 3; countdownBeat() } else handler.post(frame)
     }
 
+    /** Al reanudar (si esta activado): tres clics de negra en el mismo lugar. */
     private fun countdownBeat() {
         if (!playing) return
         if (countdown <= 0) { lastMs = SystemClock.uptimeMillis(); handler.post(frame); statusV.text = ""; refreshStatus(); return }
-        val pm = tl.measures[tl.pmAt(curT)].m
-        val beatTicks = if (pm.den == 8) 720f else 1920f / pm.den
-        val ms = (beatTicks / ticksPerMs()).toLong()
+        val ms = (480f / ticksPerMs()).toLong()
         host.synth.click(if (countdown == 1) 2 else 1)
         statusV.text = countdown.toString()
         statusV.setTextColor(C.RED_HI)
@@ -423,13 +429,19 @@ class PlayerScreen(private val host: Host, private val song: Song) : FrameLayout
             if (autoUp) { val i = speeds.indexOf(speed); if (i >= 0 && i < speeds.size - 1) { speed = speeds[i + 1]; speedBtn.setText("$speed %") } }
             seekTo(loopA); return
         }
-        if (metroOn) {
+        if (metroOn && next >= 0f) {
             val pm = tl.measures[tl.pmAt(next)]
             val beat = if (pm.m.den == 8) 720 else 1920 / pm.m.den
             val bi = ((next - pm.t) / beat).toInt()
             val gb = pm.t / 10 + bi
             if (gb != lastBeat) { lastBeat = gb; host.synth.click(if (metroAccent && bi == 0) 2 else 1) }
         }
+        // cuenta al empezar: la partitura corre en blanco y suenan tres negras
+        val base0 = if (loopA >= 0) loopA else 0f
+        if (next < base0) {
+            val b = ((next - (base0 - PRE)) / 480f).toInt()
+            if (b != preBeat && b in 0..2) { preBeat = b; host.synth.click(if (b == 2) 2 else 1); statusV.text = (3 - b).toString(); statusV.setTextColor(C.RED_HI) }
+        } else if (preBeat >= 0) { preBeat = -1; statusV.text = "" }
         curT = next
         val it = active.iterator()
         while (it.hasNext()) { val a = it.next(); if (curT >= a.off) { host.synth.noteOff(a.key); it.remove() } }
@@ -586,7 +598,7 @@ class PlayerScreen(private val host: Host, private val song: Song) : FrameLayout
     private fun render() {
         score.curT = curT
         keys.curT = curT
-        seek.value = curT / max(1, tl.total)
+        seek.value = max(0f, curT) / max(1, tl.total)
         val pm = tl.measures[tl.pmAt(curT)]
         measureV.text = (pm.index + 1).toString()
         if (mode == 1) {

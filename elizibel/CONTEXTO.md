@@ -1,7 +1,7 @@
-# CONTEXTO: ELIZIBEL v1.9
+# CONTEXTO: ELIZIBEL v2.0
 
 ## 1. Resumen
-App Android nativa de DigitalMinds (dueño: Redy; creador mostrado en "Acerca de": Joel Mamani Pauccara, no se discute) para aprender y practicar piano y flauta dulce soprano con canciones reales. Partitura que avanza, teclado de 88 teclas con notas que caen, flauta con digitación, metrónomo y afinador. v1.9 compila con kotlinc; **nada se ha probado en el teléfono** (Galaxy A03 Core, Android 13). Hermana de ART STAR (misma base de código).
+App Android nativa de DigitalMinds (dueño: Redy; creador mostrado en "Acerca de": Joel Mamani Pauccara, no se discute) para aprender y practicar piano y flauta dulce soprano con canciones reales. Partitura que avanza, teclado de 88 teclas con notas que caen, flauta con digitación, metrónomo y afinador. v2.0 compila con kotlinc; **nada se ha probado en el teléfono** (Galaxy A03 Core, Android 13). Hermana de ART STAR (misma base de código).
 
 ## 2. Tecnología
 - Kotlin 2.0.21, AGP 8.7.3, Gradle 8.9, JDK 17, compileSdk/targetSdk 34, minSdk 26. Una Activity, UI por código (sin XML ni Compose), sin librerías externas, sin internet.
@@ -21,12 +21,12 @@ App Android nativa de DigitalMinds (dueño: Redy; creador mostrado en "Acerca de
 - Piano: pentagrama doble, teclado ajustado a la canción u 88 teclas, notas que caen (arrastre vertical), práctica por mano, rojo/rosado. Flauta: partitura a la izquierda, silueta blanca a la derecha con agujeros rojos, dedos y "Luego".
 - Piano: menú "Suenan" (barra superior y Ajustes) para silenciar mano derecha, izquierda o ambas; la melodía (nota más aguda) suena más fuerte que el resto del acorde.
 - Modos Libre, Espera y Evaluar (récord), bucles (2/4/8, hasta el final, toda la canción, acelerado), velocidades 40-150 %, cuenta previa On/Off, silenciar una parte (Piano 1/2, Flauta 1/2), volumen de la app y de mis teclas.
-- Aprender: explorador (piano horizontal), tabla de digitación, escalas con dedos, símbolos, canciones; "?" con explicación en cada opción. Metrónomo (hasta seisillos, uno o dos sonidos), afinador flauta/piano con notas de referencia.
+- Aprender: explorador (piano horizontal), tabla de digitación, escalas con dedos, símbolos, canciones; "?" con explicación en cada opción. Metrónomo (hasta seisillos, uno o dos sonidos). Afinador solo de flauta: eliges la nota objetivo con flechas y las barras dicen cuánto te alejas.
 - Canciones: Listen to Your Heart, Icarus, Mariage d'Amour, Corazón de niño (66 de 80 compases), Interstellar, Experience (2 pianos), Someone You Loved (solo acompañamiento); flauta (Partituras): Titanic, We Wish You (2 flautas), Dulce Navidad, Comptine, Greensleeves; Aprender: Dulce Navidad (piano), Estrellita, Canon, Para Elisa, La mañana, y 5 de flauta.
 
 ## 5. Historial de avance
 - v1.0 base de ART STAR adaptada, lector de PDF, sonidos, 18 canciones. v1.1 rediseño completo según capturas, solo piano y flauta. v1.2 firma fija, compatibilidad Android 17.
-- v1.3 notas que caen arrastrables, silenciar partes, ajustes con "?", Titanic y We Wish. v1.4 Dulce Navidad y Corazón. v1.5 Interstellar (Pietschmann) leído de trazos dibujados. v1.6 silenciar manos, ligaduras huérfanas reparadas. v1.7 Mi corazón encantado (flauta, a ojo). v1.8 Mi corazón encantado piano (PDF MuseScore), reproductor sin barra arriba (abajo: volver, nombre, manos, controles, metrónomo, ajustes), Ajustes en filas con ventanita, cuenta inicial tan-tan-tin, barras del sistema ocultas solo en horizontal (reproductor y explorador), también al abrir menús; arrastrar pausa y al soltar continúa, explorador con zoom, íconos de instrumento en la cabecera.
+- v1.3 notas que caen arrastrables, silenciar partes, ajustes con "?", Titanic y We Wish. v1.4 Dulce Navidad y Corazón. v1.5 Interstellar (Pietschmann) leído de trazos dibujados. v1.6 silenciar manos, ligaduras huérfanas reparadas. v1.7 Mi corazón encantado (flauta, a ojo). v1.8 Mi corazón encantado piano (PDF MuseScore), reproductor sin barra arriba (abajo: volver, nombre, manos, controles, metrónomo, ajustes), Ajustes en filas con ventanita, cuenta inicial tan-tan-tin, barras del sistema ocultas solo en horizontal (reproductor y explorador), también al abrir menús; arrastrar pausa y al soltar continúa, cuenta inicial de tres negras con la partitura corriendo en blanco (al reanudar, opcional y en el sitio), explorador con zoom, íconos de instrumento en la cabecera.
 
 ## 6. Bugs resueltos
 - APK firmado distinto cada vez, no se actualizaba: keystore fija en el repo.

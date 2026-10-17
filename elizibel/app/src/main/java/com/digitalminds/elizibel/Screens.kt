@@ -742,6 +742,7 @@ class HomeScreen(private val host: Host, private val open: (Song) -> Unit) : Fra
     private class Page(val title: String, val landscape: Boolean, val make: () -> View)
     private val stack = ArrayList<Page>()
     private val instIcons = ArrayList<IconView>()
+    private val instBtns = ArrayList<View>()
 
     /** El instrumento elegido se ve en rojo; el otro, gris. */
     private fun paintInst() {
@@ -766,6 +767,7 @@ class HomeScreen(private val host: Host, private val open: (Song) -> Unit) : Fra
             f.addView(ic, FrameLayout.LayoutParams(ctx.dpi(26f), ctx.dpi(26f), Gravity.CENTER))
             f.tap { host.prefs.edit().putInt("inst", k).apply(); paintInst(); if (tab != 2) select(tab); host.toast(if (k == 0) "Piano" else "Flauta dulce") }
             header.addView(f, lp(ctx.dpi(40f), ctx.dpi(40f)))
+            instBtns.add(f)
         }
         paintInst()
         val about = FrameLayout(ctx)
@@ -875,6 +877,7 @@ class HomeScreen(private val host: Host, private val open: (Song) -> Unit) : Fra
             2 -> { val m = MetronomeTab(host); metro = m; content.addView(m, LayoutParams(MATCH, MATCH)); m.activate() }
             3 -> { val t = TunerTab(host); tuner = t; content.addView(t, LayoutParams(MATCH, MATCH)); t.activate() }
         }
+        for (b in instBtns) b.visibility = if (i <= 1) VISIBLE else INVISIBLE
         for (k in 0 until 4) {
             navIcons[k].color = if (k == i) C.RED_HI else C.MUTED
             navLabels[k].setTextColor(if (k == i) C.TEXT else C.MUTED)
@@ -911,4 +914,4 @@ class HomeScreen(private val host: Host, private val open: (Song) -> Unit) : Fra
     fun reactivate() { if (tab == 3) tuner?.activate() }
 }
 
-object BuildConfigLite { const val VERSION = "1.9" }
+object BuildConfigLite { const val VERSION = "2.0" }

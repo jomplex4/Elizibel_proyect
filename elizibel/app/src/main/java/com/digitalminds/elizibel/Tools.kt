@@ -301,9 +301,9 @@ class TunerTab(private val host: Host) : FrameLayout(host as Context) {
     private val refV = label(ctx, "", 15f, C.TEXT, Fonts.medium)
     private val handler = Handler(Looper.getMainLooper())
     private val fade = Runnable { if (System.currentTimeMillis() - lastVoiced > 600) showIdle() }
-    private var instSel = if (host.prefs.getInt("inst", 0) == 1) 0 else 1
+    private var instSel = 0  // el afinador es solo para la flauta dulce
     private val instInfo = listOf(
-        "Flauta dulce soprano: escucha solo el registro de la flauta e ignora la voz. Te muestra la nota como está escrita.",
+        "Elige la nota con las flechas y tócala en tu flauta: las barras te dicen si estás alto o bajo. Ignora la voz.",
         "Piano o cualquier sonido: muestra la nota real que suena. Toca una tecla y déjala sonar."
     )
     private val hist = ArrayList<Float>()
@@ -367,9 +367,23 @@ class TunerTab(private val host: Host) : FrameLayout(host as Context) {
         showIdle()
     }
 
+    private var refKey = 880000
+    private val refOff = Runnable { host.synth.noteOff(refKey) }
+
+    /** Toca la nota elegida; si la anterior sigue sonando, se corta. La flauta suena una octava arriba de lo escrito. */
     private fun playRef() {
-        // la referencia se toca en el instrumento elegido; la flauta suena una octava arriba
-        if (instSel == 0) host.synth.play("flute", refNote + 12, 1500) else host.synth.play("piano", refNote, 1800)
+        host.synth.noteOff(refKey)
+        handler.removeCallbacks(refOff)
+        refKey++
+        host.synth.noteOn(refKey, "flute", refNote + 12, 0.9f)
+        handler.postDelayed(refOff, 1600)
+        showTarget()
+    }
+
+    /** La nota grande es siempre la nota elegida; lo que tocas se compara con ella. */
+    private fun showTarget() {
+        noteV.text = Names.pitchClass(refNote)
+        octV.text = (Math.floorDiv(refNote, 12) - 1).toString()
     }
 
     private fun setA4(v: Int) {
@@ -381,7 +395,7 @@ class TunerTab(private val host: Host) : FrameLayout(host as Context) {
     private fun resetStability() { hist.clear(); miss = 0; shownMidi = -1f; smoothCents = 0f }
 
     private fun showIdle() {
-        noteV.text = "-"; octV.text = ""; freqV.text = ""; writtenV.text = ""
+        showTarget(); freqV.text = ""; writtenV.text = ""
         bar.live = false
         resetStability()
         statusV.setTextColor(C.MUTED)
@@ -434,23 +448,26 @@ class TunerTab(private val host: Host) : FrameLayout(host as Context) {
         val sorted = hist.sorted()
         val median = sorted[sorted.size / 2]
         if (sorted.last() - sorted.first() > 0.7f) return
-        val nearest = Math.round(median)
-        val cents = (median - nearest) * 100f
+        // se compara con la nota elegida (la flauta suena una octava arriba de lo escrito)
+        val target = refNote + 12
+        val cents = (median - target) * 100f
         lastVoiced = System.currentTimeMillis()
-        val shown = if (instSel == 0) nearest - 12 else nearest
-        noteV.text = Names.pitchClass(shown)
-        octV.text = (Math.floorDiv(shown, 12) - 1).toString()
+        showTarget()
         freqV.text = String.format("%.1f Hz", midiToFreq(median.toDouble(), a4.toDouble()))
-        smoothCents = if (shownMidi < 0f || Math.round(shownMidi) != nearest) cents else smoothCents * 0.7f + cents * 0.3f
+        smoothCents = if (shownMidi < 0f || abs(shownMidi - median) > 0.5f) cents else smoothCents * 0.7f + cents * 0.3f
         shownMidi = median
-        bar.cents = smoothCents
+        bar.cents = smoothCents.coerceIn(-50f, 50f)
         bar.live = true
         val c = smoothCents
         val tuned = abs(c) <= 5f
-        statusV.text = if (tuned) "Afinado" else if (c > 0) "Alto: sopla más suave (${c.toInt()} centésimas)" else "Bajo: sopla un poco más (${(-c).toInt()} centésimas)"
-        if (instSel == 1) statusV.text = if (tuned) "Afinado" else if (c > 0) "Alto (${c.toInt()} centésimas)" else "Bajo (${(-c).toInt()} centésimas)"
-        statusV.setTextColor(if (tuned) C.TEXT else C.MUTED)
-        writtenV.text = if (instSel == 0) "Escrita: " + Names.withOctave(shown) + "  ·  suena " + Names.withOctave(nearest) else "Nota real: " + Names.withOctave(nearest)
+        val played = Math.round(median) - 12
+        statusV.text = when {
+            tuned -> "Afinado"
+            abs(c) < 50f -> if (c > 0) "Un poco alto (${c.toInt()} centésimas)" else "Un poco bajo (${(-c).toInt()} centésimas)"
+            else -> { val st = Math.round(c / 100f); (if (st > 0) "Alto" else "Bajo") + ": " + abs(st) + (if (abs(st) == 1) " semitono" else " semitonos") }
+        }
+        statusV.setTextColor(if (tuned) C.TEXT else if (abs(c) < 50f) C.MUTED else C.RED_HI)
+        writtenV.text = "Tocas " + Names.withOctave(played) + "  ·  objetivo " + Names.withOctave(refNote)
         handler.removeCallbacks(fade)
         handler.postDelayed(fade, 900)
     }
