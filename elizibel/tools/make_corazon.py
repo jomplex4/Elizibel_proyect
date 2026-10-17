@@ -29,3 +29,5 @@ meta['bpm'] = meta['tempo'][0][1]
 d = export.build(meta, [(m, [0, 1], 0)], 'songs/corazon.json')
 r = [n[0] for e in d['ev'] for n in e[9]]
 print('notas', len(r), 'rango', min(r), max(r), 'tempo', meta['tempo'][:4])
+import fix_ties
+print('ligaduras reparadas', fix_ties.fix('songs/corazon.json'))

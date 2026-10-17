@@ -81,6 +81,15 @@
 "arr": "Flauta 1 y Flauta 2 de musicasecundaria.com"
 },
 {
+"id": "f_dulce",
+"title": "Dulce Navidad",
+"composer": "Villancico (melodía de Jingle Bells)",
+"inst": "flute",
+"level": 1,
+"group": "main",
+"arr": "En Sol, como tu hoja de flauta"
+},
+{
 "id": "comptine",
 "title": "Comptine d'un autre été",
 "composer": "Yann Tiersen",
@@ -142,15 +151,6 @@
 "level": 2,
 "group": "learn",
 "arr": "Inicio sencillo en Do mayor"
-},
-{
-"id": "f_dulce",
-"title": "Dulce Navidad",
-"composer": "Villancico (melodía de Jingle Bells)",
-"inst": "flute",
-"level": 1,
-"group": "learn",
-"arr": "En Sol, como tu hoja de flauta"
 },
 {
 "id": "f_corderito",

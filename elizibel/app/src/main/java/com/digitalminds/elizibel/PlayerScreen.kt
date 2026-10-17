@@ -106,6 +106,11 @@ class PlayerScreen(private val host: Host, private val song: Song) : FrameLayout
     /** Partes silenciadas (por ejemplo Piano 2 o Flauta 1). */
     private val muted = BooleanArray(2) { prefs.getBoolean("mute${it}_" + song.id, false) }
     private var metroAccent = prefs.getBoolean("metro_accent3", true)
+    /** Sonido de las manos (piano): 0 las dos, 1 sin derecha, 2 sin izquierda, 3 ninguna. */
+    private var handSnd = prefs.getInt("handsnd", 0).coerceIn(0, 3)
+    private val sndBtn = MenuButton(ctx, "Suenan")
+    private val handSndItems = listOf("Las dos manos", "Sin mano derecha", "Sin mano izquierda", "Ninguna (silencio)")
+    private val handSndShort = listOf("Dos manos", "Solo izq.", "Solo der.", "Ninguna")
     private var loopA = -1f
     private var loopB = -1f
     private var countdown = 0
@@ -173,12 +178,14 @@ class PlayerScreen(private val host: Host, private val song: Song) : FrameLayout
         val title = label(ctx, song.title.uppercase(), 12.5f, C.TEXT, Fonts.title)
         title.maxLines = 1
         tcol.addView(title)
-        subV.maxLines = 1
+        subV.maxLines = 1; subV.ellipsize = android.text.TextUtils.TruncateAt.END
         tcol.addView(subV)
         top.addView(tcol, lp(0, WRAP, 1f))
         statusV.setPadding(ctx.dpi(6f), 0, ctx.dpi(6f), 0)
         top.addView(statusV, lp(WRAP, WRAP))
         if (!flute) {
+            sndBtn.tap { dropdown(sndBtn, handSndItems, handSnd) { setHandSound(it) } }
+            top.addView(sndBtn, lp(WRAP, WRAP).also { it.marginEnd = ctx.dpi(6f) })
             top.addView(legend(), lp(WRAP, WRAP).also { it.marginEnd = ctx.dpi(8f) })
             top.addView(liveSegmented(ctx, listOf("Ambas", "Derecha", "Izquierda"), hand, 11f, 3.5f) { setHand(it) }, lp(ctx.dpi(200f), WRAP).also { it.marginEnd = ctx.dpi(6f) })
         }
@@ -256,6 +263,7 @@ class PlayerScreen(private val host: Host, private val song: Song) : FrameLayout
         applyRange()
         speedBtn.setText("$speed %")
         modeBtn.setText(modes[mode])
+        sndBtn.setText(handSndShort[handSnd])
         MidiIn.start(ctx)
         MidiIn.addListener(midiListener)
         MidiIn.onStatus = { refreshStatus() }
@@ -326,6 +334,15 @@ class PlayerScreen(private val host: Host, private val song: Song) : FrameLayout
         score.invalidate(); keys.invalidate()
         host.toast(when (h) { 1 -> "Practicas la mano derecha. La izquierda la toca la app."; 2 -> "Practicas la mano izquierda. La derecha la toca la app."; else -> "Practicas con las dos manos." })
         refreshStatus()
+    }
+
+    /** Silencia lo que toca la app con cada mano. No cambia la mano que practicas. */
+    private fun setHandSound(i: Int) {
+        handSnd = i
+        prefs.edit().putInt("handsnd", i).apply()
+        sndBtn.setText(handSndShort[i])
+        releaseAll()
+        host.toast(when (i) { 1 -> "La mano derecha no suena"; 2 -> "La mano izquierda no suena"; 3 -> "Ninguna mano suena"; else -> "Suenan las dos manos" })
     }
 
     private fun setMode(m: Int) {
@@ -453,18 +470,23 @@ class PlayerScreen(private val host: Host, private val song: Song) : FrameLayout
         val e = pe.e
         if (e.rest) return
         if (muted[e.part.coerceIn(0, 1)]) return
+        if (!flute && ((e.staff == 0 && (handSnd == 1 || handSnd == 3)) || (e.staff == 1 && (handSnd == 2 || handSnd == 3)))) return
         val yours = mine(e)
         if (yours && !(mode == 0 && guide)) return
         val level = floatArrayOf(1f, 0.5f, 0f)[appVol]
         if (level <= 0f) return
         // la mano izquierda un poco mas suave: los graves del piano suenan mas fuertes
         val base = if (flute) 0.85f else if (e.staff == 1) 0.6f else 0.8f
+        // acentuacion: en la derecha manda la nota mas aguda (la melodia); en la izquierda, la mas grave
+        val top = e.notes.maxOfOrNull { it.midi } ?: 0
+        val low = e.notes.minOfOrNull { it.midi } ?: 0
         for (n in e.notes) {
             if (n.tieIn) continue
+            val voice = if (flute || e.notes.size < 2) 1f else if (e.staff == 0) (if (n.midi == top) 1f else 0.62f) else (if (n.midi == low) 1f else 0.7f)
             val k = keyCounter++
             val inst = if (flute) "flute" else "piano"
             val midi = if (flute) n.midi + 12 else n.midi
-            host.synth.noteOn(k, inst, midi, base * level)
+            host.synth.noteOn(k, inst, midi, base * level * voice)
             active.add(Active(k, pe.t + max(e.sound, 30).toFloat() - 6f))
         }
     }
@@ -671,6 +693,7 @@ class PlayerScreen(private val host: Host, private val song: Song) : FrameLayout
             row("Sonido de $nm", "Encender o silenciar $nm.", "Silencia por completo $nm: sirve para escuchar solo la otra parte o para tocar tú esa parte sin que la app la toque.", onoff, if (muted[k]) 1 else 0) { muted[k] = it == 1; prefs.edit().putBoolean("mute${k}_" + song.id, muted[k]).apply() }
         }
         row("Volumen de la app", "Lo que toca la app.", "Cambia el volumen de todo lo que toca la app: la guía y la otra mano o la otra parte. Sin volumen: la app no suena y solo ves las notas.", listOf("Mismo", "Medio", "Sin volumen"), appVol) { appVol = it; prefs.edit().putInt("appvol", it).apply() }
+        if (!flute) row("Sonido de las manos", "Que mano suena.", "Silencia lo que toca la app con una mano o con las dos. Sirve para escuchar solo una mano, o para tocar tú las dos sin que suene nada. No cambia la mano que practicas.", listOf("Dos manos", "Sin derecha", "Sin izquierda", "Ninguna"), handSnd) { setHandSound(it) }
         if (!flute) row("Volumen de mis teclas", "Las teclas que tocas en pantalla.", "Volumen de las teclas que tocas en la pantalla del teléfono. Con piano por USB, el sonido sale de tu piano y no cambia aquí.", listOf("Mismo", "Medio", "Sin volumen"), myVol) { myVol = it; prefs.edit().putInt("myvol", it).apply() }
         row("Metrónomo", "Sonido de los clics.", "Un sonido: todos los tiempos suenan igual. Dos sonidos: el primer tiempo de cada compás suena distinto para marcar dónde empieza. Se usa en la cuenta previa y en el botón Metrónomo.", listOf("Un sonido", "Dos sonidos"), if (metroAccent) 1 else 0) { metroAccent = it == 1; prefs.edit().putBoolean("metro_accent3", metroAccent).apply() }
         row("Bucle acelerado", "Sube la velocidad en cada vuelta.", "Con un bucle activo, cada vez que vuelve al inicio pasa a la siguiente velocidad de la lista (por ejemplo 80 %, 90 %, 100 %) hasta 150 %.", onoff, if (autoUp) 0 else 1) { autoUp = it == 0; prefs.edit().putBoolean("autoup", autoUp).apply() }
