@@ -53,7 +53,7 @@ class MetronomeTab(private val host: Host) : FrameLayout(host as Context) {
     private val subOf = intArrayOf(1, 1, 1, 3)
     private val sigChips = ArrayList<Chip>()
     private var subIdx = host.prefs.getInt("metro_subdiv", 0)
-    private var accent = host.prefs.getBoolean("metro_accent2", false)
+    private var accent = host.prefs.getBoolean("metro_accent3", true)
 
     private val poll = object : Runnable {
         override fun run() {
@@ -98,7 +98,7 @@ class MetronomeTab(private val host: Host) : FrameLayout(host as Context) {
         col.addView(sg, lp(MATCH, WRAP))
         col.addView(pickGrid(ctx, listOf("Negras", "Corcheas", "Tresillos", "Semicorcheas", "Quintillos", "Seisillos"), subIdx.coerceIn(0, 5), 3) { subIdx = it; host.prefs.edit().putInt("metro_subdiv", it).apply(); applySub() },
             lp(MATCH, WRAP).also { it.topMargin = ctx.dpi(12f) })
-        col.addView(pickGrid(ctx, listOf("Todos iguales", "Acento en el 1"), if (accent) 1 else 0, 2) { accent = it == 1; host.prefs.edit().putBoolean("metro_accent2", accent).apply(); host.synth.metroAccent = accent },
+        col.addView(pickGrid(ctx, listOf("Un sonido", "Dos sonidos"), if (accent) 1 else 0, 2) { accent = it == 1; host.prefs.edit().putBoolean("metro_accent3", accent).apply(); host.synth.metroAccent = accent },
             lp(MATCH, WRAP).also { it.topMargin = ctx.dpi(8f) })
 
         col.addView(View0(), lp(MATCH, 0, 0.5f))
@@ -350,10 +350,10 @@ class TunerTab(private val host: Host) : FrameLayout(host as Context) {
         ref.addView(refV, lp(WRAP, WRAP).also { it.setMargins(ctx.dpi(14f), 0, ctx.dpi(14f), 0) })
         ref.addView(plus)
         col.addView(ref, lp(WRAP, WRAP))
-        val refs = listOf("La", "Do", "Re", "Mi", "Sol")
-        val refMidi = intArrayOf(69, 72, 74, 76, 79)
+        val refs = listOf("Do", "Re", "Mi", "Fa", "Sol", "La", "Si", "Do ↑", "Re ↑")
+        val refMidi = intArrayOf(60, 62, 64, 65, 67, 69, 71, 72, 74)
         col.addView(label(ctx, "Escuchar nota de referencia", 12f, C.MUTED).also { it.setPadding(0, ctx.dpi(10f), 0, ctx.dpi(6f)) })
-        col.addView(pickGrid(ctx, refs, 0, 5) { i -> refNote = refMidi[i]; playRef() }, lp(MATCH, WRAP))
+        col.addView(pickGrid(ctx, refs, 5, 5) { i -> refNote = refMidi[i]; playRef() }, lp(MATCH, WRAP))
         col.addView(android.view.View(ctx), lp(MATCH, ctx.dpi(8f)))
         setA4(a4)
         showIdle()

@@ -1,0 +1,12 @@
+id: titanic
+title: Titanic (My Heart Will Go On)
+composer: James Horner
+arr: Adaptación de Luis G. del Río
+inst: flute
+group: main
+level: 2
+time: 4/4
+key: -1
+bpm: 92
+pickup: 480
+mel: e:F4 e:G4 | e:G4 e:A4~ h:A4 e:G4 e:F4 | q:G4 h:C5 e:Bb4 e:A4 | h.:F4 q:D4 | h.:C4 e:r s:F4 s:G4 | h.:A4 e:G4 e:F4 | q:G4 h:C5 q:A4 | h:D5 q:C5 q:A4 | w:G4 | q.:F4 e:F4 q:F4 q:F4 | q:E4 h:F4 q:F4 | q:E4 h:F4 q:G4 | h:A4 h:G4 | q.:F4 e:F4 q:F4 q:F4 | q:E4 h:F4 q:F4 | w:C4 | w:r | q.:F4 e:F4 q:F4 q:F4 | q:E4 h:F4 q:F4 | q:E4 h:F4 q:G4 | h:A4 h:G4 | q.:F4 e:F4 q:F4 q:F4 | q:E4 h:F4 q:F4 | w:C4 | h:D4 h:E4 | w:F4 | h.:G4 q:C4 | h:C5 q:Bb4 q:A4 | h:G4 q:A4 q:Bb4 | h:A4 q:G4 q:F4 | q:E4 h:F4 q:E4 | w:D4 | h.:C4 q:r | w:F4 | h:G4 q:C4 q:C4 | h.:D4 q:E4 | h:F4 h:G4 | K:3 h.:A4 q:A4 | h:B4 q:E4 q:E5 | h:E5 q:D5 q:C#5 | h:B4 q:C#5 q:D5 | h:C#5 q:B4 q:A4 | q:G#4 h:A4 q:G#4 | h.:F#4~ e:F#4 s:G#4 s:F#4 | h:E4 h:D4 | h.:A4 q:A4 | h:B4 q:E4 q:E5 | h:E5 q:D5 q:C#5 | h:B4 q:C#5 q:D5 | h:C#5 q:B4 q:A4 | q:G#4 h:A4 q:G#4 | q:G#4 h:A4 q:B4 | h:C#5 h:B4 | s:A4 s:B4 e:C#5~ h:C#5 e:B4 e:A4 | q:B4 h.:E5 | s:A4 s:G#4 e:A4~ h.:A4

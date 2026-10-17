@@ -31,6 +31,11 @@ class KeyboardView(ctx: Context) : View(ctx) {
     var hand = 0
     var userPart = 0
     var onKey: ((Int, Boolean) -> Unit)? = null
+    /** Arrastre vertical sobre las notas que caen: abajo adelanta, arriba retrocede (en ticks). */
+    var onDragStart: (() -> Unit)? = null
+    var onDrag: ((Float) -> Unit)? = null
+    private var dragY = -1f
+    private var dragMoved = false
     /** midi -> 1 derecha, 2 izquierda (lo que te toca tocar ahora) */
     val lit = HashMap<Int, Int>()
     val pressed = HashSet<Int>()
@@ -155,6 +160,19 @@ class KeyboardView(ctx: Context) : View(ctx) {
 
     override fun onTouchEvent(e: MotionEvent): Boolean {
         val idx = e.actionIndex
+        val top = keyTop()
+        if (falling && (dragY >= 0f || (e.actionMasked == MotionEvent.ACTION_DOWN && e.y < top))) {
+            when (e.actionMasked) {
+                MotionEvent.ACTION_DOWN -> { dragY = e.y; dragMoved = false }
+                MotionEvent.ACTION_MOVE -> {
+                    val dy = e.y - dragY
+                    if (!dragMoved && kotlin.math.abs(dy) > context.dp(10f)) { dragMoved = true; parent.requestDisallowInterceptTouchEvent(true); onDragStart?.invoke() }
+                    if (dragMoved) { onDrag?.invoke(dy / (top / (1920f * 1.5f))); dragY = e.y }
+                }
+                MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> { dragY = -1f }
+            }
+            return true
+        }
         when (e.actionMasked) {
             MotionEvent.ACTION_DOWN, MotionEvent.ACTION_POINTER_DOWN -> {
                 val m = keyAt(e.getX(idx), e.getY(idx))

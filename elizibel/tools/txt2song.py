@@ -17,26 +17,32 @@ def compile_song(path, outdir):
         line = line.strip()
         if not line or line.startswith('#'): continue
         k, v = line.split(':', 1) if re.match(r'^[a-z]+:', line) else (None, line)
-        if k in ('rh', 'lh', 'mel'): voices.append((k, v.strip()))
+        if k in ('rh', 'lh', 'mel', 'mel2'): voices.append((k, v.strip()))
         elif k: meta[k] = v.strip()
     num, den = map(int, meta.get('time', '4/4').split('/'))
     mlen = 1920 * num // den
     key = int(meta.get('key', 0)); pickup = int(meta.get('pickup', 0))
     keyset_sh = [3, 0, 4, 1, 5, 2, 6][:max(0, key)]; keyset_fl = [6, 2, 5, 1, 4, 0, 3][:max(0, -key)]
     ev = []; nmeas = None
+    barkeys = {}
     for vname, text in voices:
         staff = 1 if vname == 'lh' else 0
+        part = 1 if vname == 'mel2' else 0
         bars = [b.strip() for b in text.split('|') if b.strip()]
         t = 0
         for bi, bar in enumerate(bars):
             length = pickup if (pickup and bi == 0) else mlen
             start = t; state = {}
             for tok in bar.split():
+                if tok.startswith('K:'):
+                    key = int(tok[2:]); barkeys[bi] = key
+                    keyset_sh = [3, 0, 4, 1, 5, 2, 6][:max(0, key)]; keyset_fl = [6, 2, 5, 1, 4, 0, 3][:max(0, -key)]
+                    continue
                 d, p = tok.split(':', 1)
                 tie = p.endswith('~'); p = p.rstrip('~')
                 dur = DUR[d]
                 if p == 'r':
-                    ev.append([t, dur, staff, 0, 0, 1 if '.' in d else 0, 0, 0, 1, [], BASE[d]])
+                    ev.append([t, dur, staff, 0, 0, 1 if '.' in d else 0, 0, part, 1, [], BASE[d]])
                 else:
                     notes = []
                     for q in p.split('+'):
@@ -49,29 +55,32 @@ def compile_song(path, outdir):
                         shown = 9
                         if alt != cur: shown = alt; state[dia] = alt
                         notes.append([midi, dia, alt, shown, 2 if tie else 0, 0, fing])
-                    ev.append([t, dur, staff, 0, 0, 1 if '.' in d else 0, 0, 0, 0, notes, BASE[d]])
+                    ev.append([t, dur, staff, 0, 0, 1 if '.' in d else 0, 0, part, 0, notes, BASE[d]])
                 t += dur
             if t - start != length:
                 raise ValueError(f'{path} {vname} compas {bi+1}: suma {t-start} en vez de {length}')
         nmeas = len(bars) if nmeas is None else nmeas
         if len(bars) != nmeas: raise ValueError(f'{path}: {vname} tiene {len(bars)} compases y otra voz {nmeas}')
+        key = int(meta.get('key', 0)); keyset_sh = [3, 0, 4, 1, 5, 2, 6][:max(0, key)]; keyset_fl = [6, 2, 5, 1, 4, 0, 3][:max(0, -key)]
     # ligaduras: la nota siguiente igual recibe tie_in
     ev.sort(key=lambda e: (e[0], e[2]))
     for i, e in enumerate(ev):
         for n in e[9]:
             if n[4] & 2:
                 for f in ev[i+1:]:
-                    if f[2] == e[2] and f[0] == e[0] + e[1]:
+                    if f[2] == e[2] and f[7] == e[7] and f[0] == e[0] + e[1]:
                         for m in f[9]:
                             if m[0] == n[0]: m[4] |= 1
                         break
-    measures = []; t = 0
+    measures = []; t = 0; k0 = int(meta.get('key', 0))
     for i in range(nmeas):
         L = pickup if (pickup and i == 0) else mlen
-        measures.append([num, den, key, t, L]); t += L
+        k0 = barkeys.get(i, k0)
+        measures.append([num, den, k0, t, L]); t += L
     d = dict(id=meta['id'], title=meta['title'], composer=meta.get('composer', ''), arr=meta.get('arr', ''), inst=meta['inst'],
              level=int(meta.get('level', 1)), bpm=int(meta.get('bpm', 90)), tempo=[[0, int(meta.get('bpm', 90))]],
              measures=measures, order=list(range(nmeas)), ev=ev)
+    if 'parts' in meta: d['partNames'] = [x.strip() for x in meta['parts'].split(',')]
     json.dump(d, open(os.path.join(outdir, meta['id'] + '.json'), 'w'), separators=(',', ':'))
     return meta, nmeas
 if __name__ == '__main__':

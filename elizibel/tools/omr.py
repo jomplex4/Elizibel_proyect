@@ -56,7 +56,7 @@ def page_objects(pg):
         if not t:
             continue
         cp = ord(t[0])
-        x = c['matrix'][4]; y = H - c['matrix'][5]
+        x = c['matrix'][4]; y = c['_y'] if '_y' in c else H - c['matrix'][5]
         if 0xE000 <= cp <= 0xF8FF and is_music_font(c['fontname']):
             gl.append(G(cp, x, y, c['x1'] - c['x0'], c['size']))
         elif 0xE000 <= cp <= 0xF8FF:

@@ -103,6 +103,9 @@ class PlayerScreen(private val host: Host, private val song: Song) : FrameLayout
     private var appVol = prefs.getInt("appvol", 0)
     private var myVol = prefs.getInt("myvol", 0)
     private var autoUp = prefs.getBoolean("autoup", false)
+    /** Partes silenciadas (por ejemplo Piano 2 o Flauta 1). */
+    private val muted = BooleanArray(2) { prefs.getBoolean("mute${it}_" + song.id, false) }
+    private var metroAccent = prefs.getBoolean("metro_accent3", true)
     private var loopA = -1f
     private var loopB = -1f
     private var countdown = 0
@@ -248,6 +251,8 @@ class PlayerScreen(private val host: Host, private val song: Song) : FrameLayout
         keys.names = prefs.getInt("keynames", 1)
         keys.hand = hand
         keys.onKey = { m, on -> onUserNote(m, on, 0.8f, false) }
+        keys.onDragStart = { if (playing) pause() }
+        keys.onDrag = { d -> seekTo(curT + d, quiet = true) }
         applyRange()
         speedBtn.setText("$speed %")
         modeBtn.setText(modes[mode])
@@ -278,9 +283,10 @@ class PlayerScreen(private val host: Host, private val song: Song) : FrameLayout
         (keys.parent as? ViewGroup)?.removeView(keys)
         (fluteV.parent as? ViewGroup)?.removeView(fluteV)
         if (flute) {
+            // partitura a la izquierda y la flauta a la derecha
             val row = LinearLayout(ctx)
-            row.addView(fluteV, lp(0, MATCH, 0.3f))
             row.addView(score, lp(0, MATCH, 0.7f))
+            row.addView(fluteV, lp(0, MATCH, 0.3f))
             middle.addView(row, LayoutParams(MATCH, MATCH))
             return
         }
@@ -377,7 +383,8 @@ class PlayerScreen(private val host: Host, private val song: Song) : FrameLayout
         val pm = tl.measures[tl.pmAt(curT)].m
         val beatTicks = if (pm.den == 8) 720f else 1920f / pm.den
         val ms = (beatTicks / ticksPerMs()).toLong()
-        host.synth.click(1)
+        val first = countdown == (if (pm.den == 8) max(1, pm.num / 3) else pm.num)
+        host.synth.click(if (metroAccent && first) 2 else 1)
         statusV.text = countdown.toString()
         statusV.setTextColor(C.RED_HI)
         countdown--
@@ -425,7 +432,7 @@ class PlayerScreen(private val host: Host, private val song: Song) : FrameLayout
             val beat = if (pm.m.den == 8) 720 else 1920 / pm.m.den
             val bi = ((next - pm.t) / beat).toInt()
             val gb = pm.t / 10 + bi
-            if (gb != lastBeat) { lastBeat = gb; host.synth.click(1) }
+            if (gb != lastBeat) { lastBeat = gb; host.synth.click(if (metroAccent && bi == 0) 2 else 1) }
         }
         curT = next
         val it = active.iterator()
@@ -445,6 +452,7 @@ class PlayerScreen(private val host: Host, private val song: Song) : FrameLayout
     private fun trigger(pe: PEv) {
         val e = pe.e
         if (e.rest) return
+        if (muted[e.part.coerceIn(0, 1)]) return
         val yours = mine(e)
         if (yours && !(mode == 0 && guide)) return
         val level = floatArrayOf(1f, 0.5f, 0f)[appVol]
@@ -641,29 +649,38 @@ class PlayerScreen(private val host: Host, private val song: Song) : FrameLayout
         sv.setContent(box)
         box.addView(label(ctx, "AJUSTES", 15f, C.TEXT, Fonts.title).also { it.letterSpacing = 0.15f; it.setPadding(0, 0, 0, ctx.dpi(8f)) })
         fun section(t: String) { box.addView(label(ctx, t, 11f, C.RED_HI, Fonts.title).also { it.letterSpacing = 0.12f; it.setPadding(0, ctx.dpi(14f), 0, ctx.dpi(4f)) }) }
-        fun row(t: String, desc: String, opts: List<String>, sel: Int, pick: (Int) -> Unit) {
+        fun row(t: String, desc: String, help: String, opts: List<String>, sel: Int, pick: (Int) -> Unit) {
             val r = LinearLayout(ctx)
             r.orientation = LinearLayout.VERTICAL
             r.setPadding(0, ctx.dpi(6f), 0, ctx.dpi(6f))
-            r.addView(label(ctx, t, 14.5f, C.TEXT, Fonts.medium))
-            r.addView(label(ctx, desc, 12f, C.MUTED).also { it.setPadding(0, ctx.dpi(2f), 0, ctx.dpi(6f)) })
+            val tr = LinearLayout(ctx)
+            tr.gravity = Gravity.CENTER_VERTICAL
+            tr.addView(label(ctx, t, 14.5f, C.TEXT, Fonts.medium))
+            tr.addView(helpDot(ctx, t, help), lp(ctx.dpi(32f), ctx.dpi(26f)))
+            r.addView(tr)
+            r.addView(label(ctx, desc, 12f, C.MUTED).also { it.setPadding(0, 0, 0, ctx.dpi(6f)) })
             r.addView(pickRow(ctx, opts, sel, pick))
             box.addView(r, lp(MATCH, WRAP))
         }
         val onoff = listOf("On", "Off")
         section("REPRODUCCIÓN")
-        row("Cuenta antes de empezar", "On: un compás de clics antes de arrancar. Off: arranca al instante.", onoff, if (countIn) 0 else 1) { countIn = it == 0; prefs.edit().putBoolean("countin2", countIn).apply() }
-        row("Escuchar mi parte", "En modo Libre la app también toca lo que practicas tú.", onoff, if (guide) 0 else 1) { guide = it == 0; prefs.edit().putBoolean("guide", guide).apply() }
-        row("Volumen de lo que toca la app", "La guía y la otra mano que toca la app.", listOf("Mismo", "Medio", "Sin volumen"), appVol) { appVol = it; prefs.edit().putInt("appvol", it).apply() }
-        if (!flute) row("Volumen de lo que tocas tú", "Las teclas que tocas en la pantalla.", listOf("Mismo", "Medio", "Sin volumen"), myVol) { myVol = it; prefs.edit().putInt("myvol", it).apply() }
-        row("Subir velocidad en el bucle", "Cada vuelta del bucle pasa a la siguiente velocidad, hasta 150 %.", onoff, if (autoUp) 0 else 1) { autoUp = it == 0; prefs.edit().putBoolean("autoup", autoUp).apply() }
-        row("Salto de los botones", "Segundos que avanzan o retroceden.", listOf("5 s", "10 s", "15 s", "30 s"), listOf(5, 10, 15, 30).indexOf(skipSec).coerceAtLeast(0)) { skipSec = listOf(5, 10, 15, 30)[it]; prefs.edit().putInt("skip", skipSec).apply(); skipBack.seconds = skipSec; skipFwd.seconds = skipSec }
+        row("Cuenta previa", "Clics antes de empezar.", "On: suena un compás de clics para que entres a tiempo. Off: la canción arranca en el instante en que tocas reproducir.", onoff, if (countIn) 0 else 1) { countIn = it == 0; prefs.edit().putBoolean("countin2", countIn).apply() }
+        row("Guía", "La app toca tu parte contigo.", "Solo en modo Libre. On: además de verla, escuchas lo que te toca tocar, como referencia. Off: suena solo lo que toca la app (la otra mano o la otra parte) y tú pones tu parte.", onoff, if (guide) 0 else 1) { guide = it == 0; prefs.edit().putBoolean("guide", guide).apply() }
+        if (song.partNames.size >= 2) for (k in 0..1) {
+            val nm = song.partNames[k]
+            row("Sonido de $nm", "Encender o silenciar $nm.", "Silencia por completo $nm: sirve para escuchar solo la otra parte o para tocar tú esa parte sin que la app la toque.", onoff, if (muted[k]) 1 else 0) { muted[k] = it == 1; prefs.edit().putBoolean("mute${k}_" + song.id, muted[k]).apply() }
+        }
+        row("Volumen de la app", "Lo que toca la app.", "Cambia el volumen de todo lo que toca la app: la guía y la otra mano o la otra parte. Sin volumen: la app no suena y solo ves las notas.", listOf("Mismo", "Medio", "Sin volumen"), appVol) { appVol = it; prefs.edit().putInt("appvol", it).apply() }
+        if (!flute) row("Volumen de mis teclas", "Las teclas que tocas en pantalla.", "Volumen de las teclas que tocas en la pantalla del teléfono. Con piano por USB, el sonido sale de tu piano y no cambia aquí.", listOf("Mismo", "Medio", "Sin volumen"), myVol) { myVol = it; prefs.edit().putInt("myvol", it).apply() }
+        row("Metrónomo", "Sonido de los clics.", "Un sonido: todos los tiempos suenan igual. Dos sonidos: el primer tiempo de cada compás suena distinto para marcar dónde empieza. Se usa en la cuenta previa y en el botón Metrónomo.", listOf("Un sonido", "Dos sonidos"), if (metroAccent) 1 else 0) { metroAccent = it == 1; prefs.edit().putBoolean("metro_accent3", metroAccent).apply() }
+        row("Bucle acelerado", "Sube la velocidad en cada vuelta.", "Con un bucle activo, cada vez que vuelve al inicio pasa a la siguiente velocidad de la lista (por ejemplo 80 %, 90 %, 100 %) hasta 150 %.", onoff, if (autoUp) 0 else 1) { autoUp = it == 0; prefs.edit().putBoolean("autoup", autoUp).apply() }
+        row("Salto", "Segundos de los botones de salto.", "Cuánto retroceden o adelantan los botones con flecha circular.", listOf("5 s", "10 s", "15 s", "30 s"), listOf(5, 10, 15, 30).indexOf(skipSec).coerceAtLeast(0)) { skipSec = listOf(5, 10, 15, 30)[it]; prefs.edit().putInt("skip", skipSec).apply(); skipBack.seconds = skipSec; skipFwd.seconds = skipSec }
         section("VISTA")
-        row("Ancho de la partitura", "Más ancho separa las notas rápidas.", listOf("Compacto", "Normal", "Amplio"), prefs.getInt("zoom", 1)) { prefs.edit().putInt("zoom", it).apply(); score.zoom = floatArrayOf(0.75f, 1f, 1.35f)[it]; score.invalidate() }
+        row("Ancho de partitura", "Separación entre notas.", "Amplio separa más las notas rápidas para leerlas mejor; compacto muestra más compases a la vez.", listOf("Compacto", "Normal", "Amplio"), prefs.getInt("zoom", 1)) { prefs.edit().putInt("zoom", it).apply(); score.zoom = floatArrayOf(0.75f, 1f, 1.35f)[it]; score.invalidate() }
         if (!flute) {
-            row("Notas que caen", "Cambia la partitura por barras que bajan hacia cada tecla.", onoff, if (prefs.getBoolean("falling", false)) 0 else 1) { prefs.edit().putBoolean("falling", it == 0).apply(); buildMiddle() }
-            row("Nombres en el teclado", "Escribe el nombre de la nota en cada tecla.", listOf("Todas", "Solo Do", "Ninguno"), when (keys.names) { 2 -> 0; 1 -> 1; else -> 2 }) { keys.names = intArrayOf(2, 1, 0)[it]; prefs.edit().putInt("keynames", keys.names).apply(); keys.invalidate() }
-            row("Teclas visibles", "Solo las que usa la canción (más grandes) o las 88.", listOf("Canción", "88 teclas"), if (prefs.getBoolean("keys88", false)) 1 else 0) { prefs.edit().putBoolean("keys88", it == 1).apply(); applyRange() }
+            row("Notas que caen", "Barras que bajan a cada tecla.", "Cambia la partitura por barras que caen sobre la tecla que debes tocar. Arrastra hacia abajo para adelantar y hacia arriba para retroceder.", onoff, if (prefs.getBoolean("falling", false)) 0 else 1) { prefs.edit().putBoolean("falling", it == 0).apply(); buildMiddle() }
+            row("Nombres en teclas", "El nombre de cada nota.", "Todas: Do, Re, Mi... en cada tecla blanca. Solo Do: marca cada Do con su número de octava para ubicarte.", listOf("Todas", "Solo Do", "Ninguno"), when (keys.names) { 2 -> 0; 1 -> 1; else -> 2 }) { keys.names = intArrayOf(2, 1, 0)[it]; prefs.edit().putInt("keynames", keys.names).apply(); keys.invalidate() }
+            row("Teclas visibles", "Cuántas teclas se muestran.", "Canción: solo las teclas que usa esta canción, más grandes. 88 teclas: el piano completo.", listOf("Canción", "88 teclas"), if (prefs.getBoolean("keys88", false)) 1 else 0) { prefs.edit().putBoolean("keys88", it == 1).apply(); applyRange() }
         }
         val ok = FrameLayout(ctx)
         ok.background = roundRect(C.RED, ctx.dp(22f))

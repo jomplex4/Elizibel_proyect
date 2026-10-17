@@ -27,13 +27,22 @@
 "arr": "Arr. Toms Mucenieks"
 },
 {
+"id": "corazon",
+"title": "Corazón de niño",
+"composer": "Raúl Di Blasio",
+"inst": "piano",
+"level": 4,
+"group": "main",
+"arr": "Faltan los compases 46 a 59 (no legibles en los PDF)"
+},
+{
 "id": "interstellar",
 "title": "Interstellar",
 "composer": "Hans Zimmer",
 "inst": "piano",
-"level": 2,
+"level": 4,
 "group": "main",
-"arr": "Main Theme · Arr. Cristian Ferrer Díaz"
+"arr": "Cornfield Chase (Main Theme) · Arr. Patrik Pietschmann"
 },
 {
 "id": "experience",
@@ -54,22 +63,22 @@
 "arr": "Acompañamiento · Arr. F. Pastori"
 },
 {
-"id": "whitechristmas",
-"title": "White Christmas",
-"composer": "Irving Berlin",
-"inst": "flute",
-"level": 1,
-"group": "main",
-"arr": "Flauta dulce soprano"
-},
-{
-"id": "interstellar_fl",
-"title": "Interstellar",
-"composer": "Hans Zimmer",
+"id": "titanic",
+"title": "Titanic (My Heart Will Go On)",
+"composer": "James Horner",
 "inst": "flute",
 "level": 2,
 "group": "main",
-"arr": "Main Theme · un tono abajo para la flauta dulce"
+"arr": "Adaptación de Luis G. del Río"
+},
+{
+"id": "wewish",
+"title": "We Wish You a Merry Christmas",
+"composer": "Villancico inglés",
+"inst": "flute",
+"level": 2,
+"group": "main",
+"arr": "Flauta 1 y Flauta 2 de musicasecundaria.com"
 },
 {
 "id": "comptine",
@@ -90,6 +99,15 @@
 "arr": "Flauta 1 de la partitura enviada"
 },
 {
+"id": "p_dulce",
+"title": "Dulce Navidad",
+"composer": "Villancico (melodía de Jingle Bells)",
+"inst": "piano",
+"level": 1,
+"group": "learn",
+"arr": "Melodía para mano derecha"
+},
+{
 "id": "p_estrellita",
 "title": "Estrellita, ¿dónde estás?",
 "composer": "Tradicional",
@@ -97,15 +115,6 @@
 "level": 1,
 "group": "learn",
 "arr": "Con bajo sencillo"
-},
-{
-"id": "p_whitechristmas",
-"title": "White Christmas",
-"composer": "Irving Berlin",
-"inst": "piano",
-"level": 1,
-"group": "learn",
-"arr": "Versión del Conservatorio Fidelis · con digitación"
 },
 {
 "id": "p_canon",
@@ -133,6 +142,15 @@
 "level": 2,
 "group": "learn",
 "arr": "Inicio sencillo en Do mayor"
+},
+{
+"id": "f_dulce",
+"title": "Dulce Navidad",
+"composer": "Villancico (melodía de Jingle Bells)",
+"inst": "flute",
+"level": 1,
+"group": "learn",
+"arr": "En Sol, como tu hoja de flauta"
 },
 {
 "id": "f_corderito",
