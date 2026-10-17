@@ -45,6 +45,15 @@
 "arr": "Cornfield Chase (Main Theme) · Arr. Patrik Pietschmann"
 },
 {
+"id": "mce_p",
+"title": "Mi corazón encantado",
+"composer": "Tetsuro Oda",
+"inst": "piano",
+"level": 2,
+"group": "main",
+"arr": "Adaptación de Mariano Garibaldi"
+},
+{
 "id": "experience",
 "title": "Experience",
 "composer": "Ludovico Einaudi",
@@ -88,6 +97,15 @@
 "level": 1,
 "group": "main",
 "arr": "En Sol, como tu hoja de flauta"
+},
+{
+"id": "mce",
+"title": "Mi corazón encantado",
+"composer": "Tetsuro Oda",
+"inst": "flute",
+"level": 3,
+"group": "main",
+"arr": "Flauta 1 (Eduardo Retamar), un tono abajo para la flauta dulce"
 },
 {
 "id": "comptine",

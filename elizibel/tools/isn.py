@@ -72,7 +72,16 @@ def run():
                         ev.base = 4 * omr.Q if hang else 2 * omr.Q
                         ev.rest_y = (c['top'] + c['bottom']) / 2; ev.rest_code = 0; ev.heads = []
                         if res['X0'] < c['x0'] < res['X1']: res['raw_events'].append(ev)
-            res['ottavas'] = omr.find_ottavas(res)
+            # en esta partitura todas las marcas son 8va / 15ma hacia arriba: afectan al pentagrama de abajo de la marca
+            ott = []
+            for (x0, x1, si, shv) in omr.find_ottavas(res):
+                g_y = None
+                for g in res['G']:
+                    if g.code in (0xE510, 0xE514) and abs(g.x - x0) < 0.5: g_y = g.y
+                below = [k for k, st in enumerate(res['staves']) if g_y is not None and st['lines'][0] > g_y]
+                k = below[0] if below else si
+                ott.append((x0, x1, k, abs(shv)))
+            res['ottavas'] = ott
             ms = omr.finish_system(res, {}, state)
             omr.find_ties(res, ms)
             for m in ms: m['page'] = pi; m['res'] = res

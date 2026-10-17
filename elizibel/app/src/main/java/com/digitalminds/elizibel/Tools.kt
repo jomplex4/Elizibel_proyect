@@ -301,7 +301,7 @@ class TunerTab(private val host: Host) : FrameLayout(host as Context) {
     private val refV = label(ctx, "", 15f, C.TEXT, Fonts.medium)
     private val handler = Handler(Looper.getMainLooper())
     private val fade = Runnable { if (System.currentTimeMillis() - lastVoiced > 600) showIdle() }
-    private var instSel = host.prefs.getInt("tuner_mode", 0).coerceIn(0, 1)
+    private var instSel = if (host.prefs.getInt("inst", 0) == 1) 0 else 1
     private val instInfo = listOf(
         "Flauta dulce soprano: escucha solo el registro de la flauta e ignora la voz. Te muestra la nota como está escrita.",
         "Piano o cualquier sonido: muestra la nota real que suena. Toca una tecla y déjala sonar."
@@ -319,9 +319,6 @@ class TunerTab(private val host: Host) : FrameLayout(host as Context) {
         val sv = FastScrollView(ctx)
         sv.setContent(col)
         addView(sv, LayoutParams(MATCH, MATCH))
-        col.addView(liveSegmented(ctx, listOf("Flauta", "Piano"), instSel, 13f, 8f) {
-            instSel = it; host.prefs.edit().putInt("tuner_mode", it).apply(); instInfoV.text = instInfo[it]; restart()
-        }, lp(MATCH, WRAP).also { it.topMargin = ctx.dpi(6f) })
         instInfoV.text = instInfo[instSel]
         instInfoV.gravity = Gravity.CENTER
         instInfoV.setPadding(ctx.dpi(6f), ctx.dpi(6f), ctx.dpi(6f), 0)
@@ -350,10 +347,21 @@ class TunerTab(private val host: Host) : FrameLayout(host as Context) {
         ref.addView(refV, lp(WRAP, WRAP).also { it.setMargins(ctx.dpi(14f), 0, ctx.dpi(14f), 0) })
         ref.addView(plus)
         col.addView(ref, lp(WRAP, WRAP))
-        val refs = listOf("Do", "Re", "Mi", "Fa", "Sol", "La", "Si", "Do ↑", "Re ↑")
-        val refMidi = intArrayOf(60, 62, 64, 65, 67, 69, 71, 72, 74)
-        col.addView(label(ctx, "Escuchar nota de referencia", 12f, C.MUTED).also { it.setPadding(0, ctx.dpi(10f), 0, ctx.dpi(6f)) })
-        col.addView(pickGrid(ctx, refs, 5, 5) { i -> refNote = refMidi[i]; playRef() }, lp(MATCH, WRAP))
+        col.addView(label(ctx, "Nota de referencia", 12f, C.MUTED).also { it.setPadding(0, ctx.dpi(12f), 0, ctx.dpi(6f)) })
+        val rr = LinearLayout(ctx)
+        rr.gravity = Gravity.CENTER
+        val lo = if (instSel == 0) 60 else 36; val hi = if (instSel == 0) 86 else 96
+        refNote = if (instSel == 0) 69 else 69
+        val noteChip = Chip(ctx, "")
+        fun showRef() { noteChip.text = "▶  " + Names.withOctave(refNote) }
+        val prev = Chip(ctx, "‹"); prev.tap { refNote = (refNote - 1).coerceAtLeast(lo); showRef(); playRef() }
+        val next = Chip(ctx, "›"); next.tap { refNote = (refNote + 1).coerceAtMost(hi); showRef(); playRef() }
+        noteChip.tap { playRef() }
+        showRef()
+        rr.addView(prev, lp(ctx.dpi(52f), WRAP))
+        rr.addView(noteChip, lp(ctx.dpi(130f), WRAP).also { it.setMargins(ctx.dpi(10f), 0, ctx.dpi(10f), 0) })
+        rr.addView(next, lp(ctx.dpi(52f), WRAP))
+        col.addView(rr, lp(MATCH, WRAP))
         col.addView(android.view.View(ctx), lp(MATCH, ctx.dpi(8f)))
         setA4(a4)
         showIdle()

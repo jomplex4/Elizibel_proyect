@@ -372,7 +372,7 @@ def analyze_system(pg, staves, gl, txt, vlines, beams, sp, msize, cfg, bounds):
     tuplets = [g for g in G_ if 0xE880 <= g.code <= 0xE889]
     tdig = [(g.x + abs(g.w) / 2, g.y, g.code - 0xE880) for g in tuplets]
     for t in txt:
-        if t['t'].isdigit() and 'Italic' in t['font'] and cfg.get('italic_tuplets', True) and top <= t['y'] <= bot and t['size'] < 12:
+        if t['t'].isdigit() and 'Italic' in t['font'] and cfg.get('italic_tuplets', True) and top <= t['y'] <= bot and t['size'] < 16:
             # en cursiva pequenos: o numero de compas (al inicio del sistema) o tuplet
             if t['x'] > X0 + sp * 6:
                 tdig.append(((t['x'] + t['x1']) / 2, t['y'], int(t['t'])))
@@ -399,6 +399,16 @@ def analyze_system(pg, staves, gl, txt, vlines, beams, sp, msize, cfg, bounds):
             if lx and rx:
                 x0 = min(l['x0'] for l in lx); x1 = max(l['x1'] for l in rx)
                 grp = [e for e in events if e.staff == si and x0 - sp * 0.8 <= e.x <= x1 + sp * 0.3 and not e.grace]
+            if not grp and num in (3, 6):
+                # sin corchete legible: los num eventos seguidos del pentagrama cuyo centro queda bajo el numero
+                cand = sorted([e for e in events if e.staff == si and not e.grace], key=lambda e: e.x)
+                best = None
+                for k in range(0, max(0, len(cand) - num + 1)):
+                    g = cand[k:k + num]
+                    mid = (g[0].x + g[-1].x) / 2 + sp * 0.6
+                    dist = abs(mid - tx)
+                    if g[-1].x - g[0].x < sp * 14 and (best is None or dist < best[0]): best = (dist, g)
+                if best and best[0] < sp * 3: grp = best[1]
         normal = 1
         while normal * 2 < num:
             normal *= 2

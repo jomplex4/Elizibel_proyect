@@ -276,7 +276,7 @@ fun infoDialog(ctx: Context, title: String, text: String) {
     d.window?.setBackgroundDrawable(ColorDrawable(0))
     val dm = ctx.resources.displayMetrics
     d.window?.setLayout(min(ctx.dpi(440f), (dm.widthPixels * 0.9f).toInt()), WRAP)
-    d.show()
+    d.showClean()
 }
 
 /** Signo de interrogacion en un circulo: al tocarlo explica. */
@@ -327,8 +327,7 @@ class LibraryTab(private val host: Host, private val songs: List<SongInfo>, priv
 
     init {
         orientation = VERTICAL
-        addView(instSwitch(ctx, inst) { inst = it; host.prefs.edit().putInt("inst", it).apply(); fill() }, lp(MATCH, WRAP).also { it.setMargins(ctx.dpi(16f), ctx.dpi(2f), ctx.dpi(16f), 0) })
-        addView(list, lp(MATCH, 0, 1f).also { it.topMargin = ctx.dpi(8f) })
+        addView(list, lp(MATCH, 0, 1f).also { it.topMargin = ctx.dpi(2f) })
         fill()
     }
 
@@ -356,8 +355,7 @@ class LearnTab(private val host: Host, private val songs: List<SongInfo>, privat
 
     init {
         orientation = VERTICAL
-        addView(instSwitch(ctx, inst) { inst = it; host.prefs.edit().putInt("inst", it).apply(); fill() }, lp(MATCH, WRAP).also { it.setMargins(ctx.dpi(16f), ctx.dpi(2f), ctx.dpi(16f), 0) })
-        addView(body, lp(MATCH, 0, 1f).also { it.topMargin = ctx.dpi(8f) })
+        addView(body, lp(MATCH, 0, 1f).also { it.topMargin = ctx.dpi(2f) })
         fill()
     }
 
@@ -416,17 +414,20 @@ class LearnTab(private val host: Host, private val songs: List<SongInfo>, privat
     }
 }
 
-/** Un pentagrama (clave de sol o de fa) que muestra una nota con su nombre. */
+/** Un pentagrama (clave de sol o de fa) que muestra una nota. Deja espacio arriba y abajo para las lineas adicionales. */
 class NoteStaffView(ctx: Context, private val treble: Boolean) : View(ctx) {
     var note: Pair<Int, Int>? = null   // (dia, alt)
         set(v) { field = v; invalidate() }
     var color = C.RED_HI
+    var onClef: (() -> Unit)? = null
     private val p = Paint(android.graphics.Paint.ANTI_ALIAS_FLAG)
+    private var sp = 10f
 
     override fun onDraw(c: Canvas) {
         val w = width.toFloat(); val h = height.toFloat()
-        val sp = min(h / 13f, w / 9f)
-        val top = (h - 4 * sp) / 2f
+        sp = min(h / 17f, w / 9f)
+        // clave de sol: sitio para Do7 arriba; clave de fa: sitio para Do2 abajo
+        val top = if (treble) h - 5.5f * sp - 4 * sp else 2.5f * sp + (h - 17f * sp) / 2
         p.color = C.MUTED; p.strokeWidth = sp * 0.1f
         for (k in 0 until 5) c.drawLine(sp * 0.4f, top + k * sp, w - sp * 0.4f, top + k * sp, p)
         p.typeface = Fonts.music; p.textSize = sp * 4f; p.color = C.TEXT
@@ -443,6 +444,13 @@ class NoteStaffView(ctx: Context, private val treble: Boolean) : View(ctx) {
         c.drawText("\uE0A2", x, y, p)
         if (n.second != 0) c.drawText(if (n.second > 0) "\uE262" else "\uE260", x - sp * 1.5f, y, p)
     }
+
+    override fun onTouchEvent(e: android.view.MotionEvent): Boolean {
+        if (e.actionMasked == android.view.MotionEvent.ACTION_UP && e.x < sp * 4.5f) { performClick(); onClef?.invoke() }
+        return true
+    }
+
+    override fun performClick(): Boolean = super.performClick()
 }
 
 private fun spellSharp(m: Int): Pair<Int, Int> {
@@ -451,38 +459,38 @@ private fun spellSharp(m: Int): Pair<Int, Int> {
     return Pair((Math.floorDiv(m, 12) - 1) * 7 + d, if (Names.isBlack(m)) 1 else 0)
 }
 
-/** Explorador del piano en horizontal: clave de fa a la izquierda (graves), clave de sol a la derecha (agudos). */
+/** Explorador del piano en horizontal: clave de fa a la izquierda (graves), clave de sol a la derecha (agudos), teclado a todo el ancho con zoom de dos dedos. */
 class PianoExplorer(private val host: Host) : LinearLayout(host as Context) {
     private val ctx: Context = host as Context
     private val bass = NoteStaffView(ctx, false)
     private val treble = NoteStaffView(ctx, true)
-    private val name = label(ctx, "Toca una tecla", 26f, C.TEXT, Fonts.bold)
+    private val name = label(ctx, "Toca una tecla", 24f, C.TEXT, Fonts.bold)
     private val info = label(ctx, "", 12.5f, C.MUTED)
     private val keys = KeyboardView(ctx)
+    private val bar = KeyScrollBar(ctx, keys)
 
     init {
         orientation = VERTICAL
-        setPadding(ctx.dpi(10f), 0, ctx.dpi(10f), ctx.dpi(6f))
         val row = LinearLayout(ctx)
         row.gravity = Gravity.CENTER_VERTICAL
-        val lcol = LinearLayout(ctx); lcol.orientation = VERTICAL; lcol.gravity = Gravity.CENTER_HORIZONTAL
-        lcol.addView(label(ctx, "MANO IZQUIERDA · CLAVE DE FA", 10.5f, C.MUTED, Fonts.title))
-        lcol.addView(bass, lp(MATCH, 0, 1f))
-        row.addView(lcol, lp(0, MATCH, 1f))
+        row.setPadding(ctx.dpi(10f), 0, ctx.dpi(10f), 0)
+        row.addView(bass, lp(0, MATCH, 1f))
         val mid = LinearLayout(ctx); mid.orientation = VERTICAL; mid.gravity = Gravity.CENTER
         name.gravity = Gravity.CENTER
         mid.addView(name, lp(MATCH, WRAP))
         info.gravity = Gravity.CENTER
         mid.addView(info, lp(MATCH, WRAP))
-        row.addView(mid, lp(0, MATCH, 0.8f))
-        val rcol = LinearLayout(ctx); rcol.orientation = VERTICAL; rcol.gravity = Gravity.CENTER_HORIZONTAL
-        rcol.addView(label(ctx, "MANO DERECHA · CLAVE DE SOL", 10.5f, C.MUTED, Fonts.title))
-        rcol.addView(treble, lp(MATCH, 0, 1f))
-        row.addView(rcol, lp(0, MATCH, 1f))
+        row.addView(mid, lp(0, MATCH, 0.75f))
+        row.addView(treble, lp(0, MATCH, 1f))
         addView(row, lp(MATCH, 0, 1f))
+        bass.onClef = { host.toast("Clave de fa: mano izquierda, notas graves. La cuarta línea es Fa.") }
+        treble.onClef = { host.toast("Clave de sol: mano derecha, notas agudas. La segunda línea es Sol.") }
         keys.setRange(36, 96)
         keys.names = 1
-        addView(keys, lp(MATCH, 0, 0.9f))
+        keys.zoomable = true
+        keys.onView = { bar.invalidate() }
+        addView(keys, lp(MATCH, 0, 0.95f))
+        addView(bar, lp(MATCH, ctx.dpi(14f)))
         keys.onKey = { m, on -> if (on) show(m) }
     }
 
@@ -495,8 +503,8 @@ class PianoExplorer(private val host: Host) : LinearLayout(host as Context) {
         treble.note = if (right) n else null
         bass.note = if (!right) n else null
         name.text = Names.withOctave(m)
-        info.text = (if (m == 60) "Do central: une los dos pentagramas.\n" else "") + (if (right) "Mano derecha" else "Mano izquierda") +
-            (if (n.second != 0) "\nTecla negra: también se llama " + Names.spelled(n.first + 1, -1) else "")
+        info.text = (if (m == 60) "Do central\n" else "") + (if (right) "Mano derecha" else "Mano izquierda") +
+            (if (n.second != 0) "\nTambién se llama " + Names.spelled(n.first + 1, -1) else "")
     }
 }
 
@@ -598,19 +606,24 @@ class SymbolsView(host: Host, piano: Boolean) : FrameLayout(host as Context) {
             items.add(Triple("\uE000", "Llave", "Une los dos pentagramas del piano: se leen y tocan a la vez, uno con cada mano."))
         }
         items.addAll(listOf(
-            Triple("\uE084\uE084", "Cifra de compás", "El número de arriba dice cuántos tiempos tiene cada compás; el de abajo, qué figura vale un tiempo (4 = negra)."),
+            Triple("\uE084", "Cifra de compás", "El número de arriba dice cuántos tiempos tiene cada compás; el de abajo, qué figura vale un tiempo (4 = negra)."),
             Triple("\uE262\uE262", "Armadura", "Sostenidos o bemoles al inicio de cada línea: valen para toda la canción en esas notas."),
             Triple("\uE1D2", "Redonda", "Dura 4 tiempos."),
             Triple("\uE1D3", "Blanca", "Dura 2 tiempos."),
             Triple("\uE1D5", "Negra", "Dura 1 tiempo."),
             Triple("\uE1D7", "Corchea", "Medio tiempo. Varias se unen con una barra llamada haz."),
             Triple("\uE1D9", "Semicorchea", "Un cuarto de tiempo. Llevan dos barras."),
+            Triple("\uE1DB", "Fusa", "Un octavo de tiempo: caben 8 en una negra. Llevan tres barras."),
+            Triple("\uE1DD", "Semifusa", "Un dieciseisavo de tiempo: caben 16 en una negra. Llevan cuatro barras."),
             Triple("\uE1D5\uE1E7", "Puntillo", "Suma la mitad de la duración: negra con puntillo = 1 tiempo y medio."),
             Triple("\uE883", "Tresillo", "Tres notas en el tiempo de dos. El número va sobre el grupo."),
             Triple("\uE4E3", "Silencio de redonda", "Todo el compás en silencio."),
             Triple("\uE4E4", "Silencio de blanca", "Dos tiempos en silencio."),
             Triple("\uE4E5", "Silencio de negra", "Un tiempo en silencio."),
             Triple("\uE4E6", "Silencio de corchea", "Medio tiempo en silencio."),
+            Triple("\uE4E7", "Silencio de semicorchea", "Un cuarto de tiempo en silencio."),
+            Triple("\uE4E8", "Silencio de fusa", "Un octavo de tiempo en silencio."),
+            Triple("\uE4E9", "Silencio de semifusa", "Un dieciseisavo de tiempo en silencio."),
             Triple("\uE262", "Sostenido", "Sube medio tono. En el piano: la tecla de la derecha más cercana."),
             Triple("\uE260", "Bemol", "Baja medio tono. En el piano: la tecla de la izquierda más cercana."),
             Triple("\uE261", "Becuadro", "Anula el sostenido o bemol hasta el final del compás."),
@@ -619,7 +632,7 @@ class SymbolsView(host: Host, piano: Boolean) : FrameLayout(host as Context) {
             Triple("\uE4A0", "Acento", "Toca esa nota más fuerte."),
             Triple("\uE4C0", "Calderón", "Sostén la nota un poco más de lo escrito."),
             Triple("\uE040", "Repetición", "Entre las barras con dos puntos se toca dos veces. La app ya hace las repeticiones."),
-            Triple("\uE520\uE522", "Dinámicas", "p = suave, mp = medio suave, mf = medio fuerte, f = fuerte.")
+            Triple("\uE521\uE522", "Dinámicas", "p = suave, mp = medio suave, mf = medio fuerte, f = fuerte.")
         ))
         if (piano) {
             items.add(Triple("\uE510", "8va", "Toca una octava más arriba de lo escrito mientras dure la línea punteada (8vb: más abajo)."))
@@ -728,6 +741,13 @@ class HomeScreen(private val host: Host, private val open: (Song) -> Unit) : Fra
     private var tuner: TunerTab? = null
     private class Page(val title: String, val landscape: Boolean, val make: () -> View)
     private val stack = ArrayList<Page>()
+    private val instIcons = ArrayList<IconView>()
+
+    /** El instrumento elegido se ve en rojo; el otro, gris. */
+    private fun paintInst() {
+        val k = host.prefs.getInt("inst", 0)
+        for ((i, ic) in instIcons.withIndex()) ic.color = if (i == k) C.RED_HI else C.MUTED
+    }
 
     init {
         setBackgroundColor(C.BG)
@@ -739,6 +759,15 @@ class HomeScreen(private val host: Host, private val open: (Song) -> Unit) : Fra
         header.setPadding(ctx.dpi(18f), ctx.dpi(12f), ctx.dpi(14f), ctx.dpi(8f))
         header.addView(logoView(ctx, 22f))
         header.addView(View(ctx), lp(0, 1, 1f))
+        for (k in 0..1) {
+            val f = FrameLayout(ctx)
+            val ic = IconView(ctx, if (k == 0) IconView.KEYS else IconView.FLUTE)
+            instIcons.add(ic)
+            f.addView(ic, FrameLayout.LayoutParams(ctx.dpi(26f), ctx.dpi(26f), Gravity.CENTER))
+            f.tap { host.prefs.edit().putInt("inst", k).apply(); paintInst(); if (tab != 2) select(tab); host.toast(if (k == 0) "Piano" else "Flauta dulce") }
+            header.addView(f, lp(ctx.dpi(40f), ctx.dpi(40f)))
+        }
+        paintInst()
         val about = FrameLayout(ctx)
         about.addView(IconView(ctx, IconView.INFO).also { it.color = C.MUTED }, FrameLayout.LayoutParams(ctx.dpi(26f), ctx.dpi(26f), Gravity.CENTER))
         about.tap { showAbout() }
@@ -831,7 +860,7 @@ class HomeScreen(private val host: Host, private val open: (Song) -> Unit) : Fra
         d.window?.setBackgroundDrawable(ColorDrawable(0))
         val dm = ctx.resources.displayMetrics
         d.window?.setLayout((dm.widthPixels * 0.9f).toInt().coerceAtMost(ctx.dpi(460f)), (dm.heightPixels * 0.88f).toInt())
-        d.show()
+        d.showClean()
     }
 
     private fun select(i: Int) {
@@ -882,4 +911,4 @@ class HomeScreen(private val host: Host, private val open: (Song) -> Unit) : Fra
     fun reactivate() { if (tab == 3) tuner?.activate() }
 }
 
-object BuildConfigLite { const val VERSION = "1.6" }
+object BuildConfigLite { const val VERSION = "1.9" }

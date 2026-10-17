@@ -1,7 +1,7 @@
 """Compila canciones escritas a mano (texto) al JSON de la app y valida que cada compas sume exacto."""
 import json, re, sys, glob, os
-DUR = {'w':1920,'h.':1440,'h':960,'q.':720,'q':480,'e.':360,'e':240,'s.':180,'s':120,'t':60}
-BASE = {'w':1920,'h.':960,'h':960,'q.':480,'q':480,'e.':240,'e':240,'s.':120,'s':120,'t':60}
+DUR = {'q3':320,'e3':160,'h3':640,'w':1920,'h.':1440,'h':960,'q.':720,'q':480,'e.':360,'e':240,'s.':180,'s':120,'t':60}
+BASE = {'q3':480,'e3':240,'h3':960,'w':1920,'h.':960,'h':960,'q.':480,'q':480,'e.':240,'e':240,'s.':120,'s':120,'t':60}
 STEP = {'C':0,'D':1,'E':2,'F':3,'G':4,'A':5,'B':6}
 SEMI = [0,2,4,5,7,9,11]
 def parse_pitch(p):
@@ -55,7 +55,7 @@ def compile_song(path, outdir):
                         shown = 9
                         if alt != cur: shown = alt; state[dia] = alt
                         notes.append([midi, dia, alt, shown, 2 if tie else 0, 0, fing])
-                    ev.append([t, dur, staff, 0, 0, 1 if '.' in d else 0, 0, part, 0, notes, BASE[d]])
+                    ev.append([t, dur, staff, 0, 0, 1 if '.' in d else 0, 3 if d.endswith('3') else 0, part, 0, notes, BASE[d]])
                 t += dur
             if t - start != length:
                 raise ValueError(f'{path} {vname} compas {bi+1}: suma {t-start} en vez de {length}')

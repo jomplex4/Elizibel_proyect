@@ -1,7 +1,7 @@
-# CONTEXTO: ELIZIBEL v1.6
+# CONTEXTO: ELIZIBEL v1.9
 
 ## 1. Resumen
-App Android nativa de DigitalMinds (dueño: Redy; creador mostrado en "Acerca de": Joel Mamani Pauccara, no se discute) para aprender y practicar piano y flauta dulce soprano con canciones reales. Partitura que avanza, teclado de 88 teclas con notas que caen, flauta con digitación, metrónomo y afinador. v1.6 compila con kotlinc; **nada se ha probado en el teléfono** (Galaxy A03 Core, Android 13). Hermana de ART STAR (misma base de código).
+App Android nativa de DigitalMinds (dueño: Redy; creador mostrado en "Acerca de": Joel Mamani Pauccara, no se discute) para aprender y practicar piano y flauta dulce soprano con canciones reales. Partitura que avanza, teclado de 88 teclas con notas que caen, flauta con digitación, metrónomo y afinador. v1.9 compila con kotlinc; **nada se ha probado en el teléfono** (Galaxy A03 Core, Android 13). Hermana de ART STAR (misma base de código).
 
 ## 2. Tecnología
 - Kotlin 2.0.21, AGP 8.7.3, Gradle 8.9, JDK 17, compileSdk/targetSdk 34, minSdk 26. Una Activity, UI por código (sin XML ni Compose), sin librerías externas, sin internet.
@@ -26,7 +26,7 @@ App Android nativa de DigitalMinds (dueño: Redy; creador mostrado en "Acerca de
 
 ## 5. Historial de avance
 - v1.0 base de ART STAR adaptada, lector de PDF, sonidos, 18 canciones. v1.1 rediseño completo según capturas, solo piano y flauta. v1.2 firma fija, compatibilidad Android 17.
-- v1.3 notas que caen arrastrables, silenciar partes, ajustes con "?", Titanic y We Wish. v1.4 Dulce Navidad y Corazón. v1.5 Interstellar (Pietschmann) leído de trazos dibujados. v1.6 silenciar manos, Dulce Navidad de flauta a Partituras, ligaduras huérfanas reparadas.
+- v1.3 notas que caen arrastrables, silenciar partes, ajustes con "?", Titanic y We Wish. v1.4 Dulce Navidad y Corazón. v1.5 Interstellar (Pietschmann) leído de trazos dibujados. v1.6 silenciar manos, ligaduras huérfanas reparadas. v1.7 Mi corazón encantado (flauta, a ojo). v1.8 Mi corazón encantado piano (PDF MuseScore), reproductor sin barra arriba (abajo: volver, nombre, manos, controles, metrónomo, ajustes), Ajustes en filas con ventanita, cuenta inicial tan-tan-tin, barras del sistema ocultas solo en horizontal (reproductor y explorador), también al abrir menús; arrastrar pausa y al soltar continúa, explorador con zoom, íconos de instrumento en la cabecera.
 
 ## 6. Bugs resueltos
 - APK firmado distinto cada vez, no se actualizaba: keystore fija en el repo.
@@ -42,7 +42,8 @@ App Android nativa de DigitalMinds (dueño: Redy; creador mostrado en "Acerca de
 - Corazón: faltan compases 46 a 59 (PDF dañado) y la app numera 1 a 66, no como el impreso. El usuario oyó saltos bruscos agudo-grave en los compases 33 a 37 y 53 a 57 (partitura leída = PDF, sextas en la derecha, sin error hallado): pedir compás y descripción exacta si persiste.
 - Final de las líneas 8va en Interstellar sin confirmar de oído. Dulce Navidad flauta: la hoja del usuario dice "re" donde el PDF tiene un silencio.
 - Transcritas a ojo, verificar de oído: Greensleeves, Titanic, We Wish You, Para Elisa, La mañana, Canon, melodías infantiles. Someone You Loved es solo acompañamiento.
-- Faltan por no tener partitura legible: Past Lives, Una mattina (original), Canon completo, Hedwig, Gymnopédie, One Summer's Day, Mi corazón encantado (PDF escaneado; `tools/mce_det.py` detecta alturas pero las blancas, alteraciones y ritmo exigen lectura a ojo; sube hasta Mi6, hay que transportar).
+- Faltan por no tener partitura legible: Past Lives, Una mattina (original), Canon completo, Hedwig, Gymnopédie, One Summer's Day. Mi corazón encantado de flauta es lectura a ojo de un escaneo, un tono abajo.
+- Interstellar 97-110: la izquierda cruza sobre la derecha (está así en la partitura).
 - `make_piano.py` aún trae el Interstellar viejo: no ejecutarlo sin quitarlo (pisaría el nuevo). Los scripts leen PDFs de `/mnt/user-data/uploads`.
 
 ## 8. Decisiones importantes

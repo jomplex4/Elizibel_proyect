@@ -34,6 +34,7 @@ class KeyboardView(ctx: Context) : View(ctx) {
     /** Arrastre vertical sobre las notas que caen: abajo adelanta, arriba retrocede (en ticks). */
     var onDragStart: (() -> Unit)? = null
     var onDrag: ((Float) -> Unit)? = null
+    var onDragEnd: (() -> Unit)? = null
     private var dragY = -1f
     private var dragMoved = false
     /** midi -> 1 derecha, 2 izquierda (lo que te toca tocar ahora) */
@@ -44,6 +45,23 @@ class KeyboardView(ctx: Context) : View(ctx) {
     private val touching = HashMap<Int, Int>()
     private val kx = FloatArray(2)
     private var whites = 52
+    /** Zoom con dos dedos (explorador): 1 = todo el rango visible. offset en pixeles. */
+    var zoomable = false
+    var zoom = 1f
+        private set
+    var offset = 0f
+        set(v) { field = v.coerceIn(0f, max(0f, width * zoom - width)); invalidate(); onView?.invoke() }
+    var onView: (() -> Unit)? = null
+    private val scaler = android.view.ScaleGestureDetector(ctx, object : android.view.ScaleGestureDetector.SimpleOnScaleGestureListener() {
+        override fun onScale(d: android.view.ScaleGestureDetector): Boolean {
+            val nz = (zoom * d.scaleFactor).coerceIn(1f, 4f)
+            val fx = d.focusX
+            val newOff = (offset + fx) * (nz / zoom) - fx
+            zoom = nz
+            offset = newOff
+            return true
+        }
+    })
     private val solf = arrayOf("Do", "", "Re", "", "Mi", "Fa", "", "Sol", "", "La", "", "Si")
 
     fun setRange(a: Int, b: Int) {
@@ -58,11 +76,11 @@ class KeyboardView(ctx: Context) : View(ctx) {
     private fun keyTop(): Float = if (falling) height * 0.6f else 0f
 
     private fun keyX(m: Int, out: FloatArray) {
-        val ww = width.toFloat() / max(1, whites)
+        val ww = width.toFloat() * zoom / max(1, whites)
         var wi = 0
         for (k in lo until m) if (!Names.isBlack(k)) wi++
-        if (!Names.isBlack(m)) { out[0] = wi * ww; out[1] = (wi + 1) * ww }
-        else { val bw = ww * 0.6f; out[0] = wi * ww - bw / 2; out[1] = wi * ww + bw / 2 }
+        if (!Names.isBlack(m)) { out[0] = wi * ww - offset; out[1] = (wi + 1) * ww - offset }
+        else { val bw = ww * 0.6f; out[0] = wi * ww - bw / 2 - offset; out[1] = wi * ww + bw / 2 - offset }
     }
 
     private fun handColor(h: Int): Int = if (h == 1) C.RED_HI else C.PINK
@@ -72,14 +90,16 @@ class KeyboardView(ctx: Context) : View(ctx) {
         val top = keyTop()
         c.drawColor(C.BG)
         if (falling) drawFalling(c, top)
-        val ww = w / max(1, whites)
+        val ww = w * zoom / max(1, whites)
         val kh = h - top
         p.shader = null
         p.style = Paint.Style.FILL
         var wi = 0
         for (m in lo..hi) {
             if (Names.isBlack(m)) continue
-            r.set(wi * ww + 1f, top, (wi + 1) * ww - 1f, h)
+            val x0 = wi * ww - offset
+            if (x0 > w || x0 + ww < 0) { wi++; continue }
+            r.set(x0 + 1f, top, x0 + ww - 1f, h)
             val l = lit[m]
             p.color = if (l != null) handColor(l) else 0xFFEDEDEF.toInt()
             c.drawRoundRect(r, ww * 0.12f, ww * 0.12f, p)
@@ -88,9 +108,9 @@ class KeyboardView(ctx: Context) : View(ctx) {
                 p.color = if (l != null) C.TEXT else 0xFF7C7E86.toInt()
                 p.textAlign = Paint.Align.CENTER; p.typeface = if (l != null) Fonts.bold else Fonts.medium
                 p.textSize = min(ww * (if (names == 2) 0.34f else 0.3f), context.dp(11f))
-                c.drawText(label, (wi + 0.5f) * ww, h - context.dp(6f), p)
+                c.drawText(label, x0 + 0.5f * ww, h - context.dp(6f), p)
             }
-            if (m in pressed) { p.color = if (l != null) C.TEXT else C.RED; c.drawCircle((wi + 0.5f) * ww, h - kh * 0.3f, min(ww * 0.26f, context.dp(7f)), p) }
+            if (m in pressed) { p.color = if (l != null) C.TEXT else C.RED; c.drawCircle(x0 + 0.5f * ww, h - kh * 0.3f, min(ww * 0.26f, context.dp(7f)), p) }
             wi++
         }
         for (m in lo..hi) {
@@ -159,6 +179,15 @@ class KeyboardView(ctx: Context) : View(ctx) {
     }
 
     override fun onTouchEvent(e: MotionEvent): Boolean {
+        if (zoomable) {
+            scaler.onTouchEvent(e)
+            if (e.pointerCount >= 2 || scaler.isInProgress) {
+                // dos dedos = acercar o alejar: se sueltan las teclas tocadas
+                for (k in touching.values) { pressed.remove(k); onKey?.invoke(k, false) }
+                touching.clear(); invalidate()
+                if (e.actionMasked != MotionEvent.ACTION_POINTER_DOWN || e.pointerCount > 1) return true
+            }
+        }
         val idx = e.actionIndex
         val top = keyTop()
         if (falling && (dragY >= 0f || (e.actionMasked == MotionEvent.ACTION_DOWN && e.y < top))) {
@@ -169,7 +198,7 @@ class KeyboardView(ctx: Context) : View(ctx) {
                     if (!dragMoved && kotlin.math.abs(dy) > context.dp(10f)) { dragMoved = true; parent.requestDisallowInterceptTouchEvent(true); onDragStart?.invoke() }
                     if (dragMoved) { onDrag?.invoke(dy / (top / (1920f * 1.5f))); dragY = e.y }
                 }
-                MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> { dragY = -1f }
+                MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> { if (dragMoved) onDragEnd?.invoke(); dragY = -1f; dragMoved = false }
             }
             return true
         }
@@ -304,5 +333,31 @@ class FluteView(ctx: Context) : View(ctx) {
             1 -> { p.color = C.RED_HI; c.drawCircle(x, y, rad * 0.92f, p) }
             2 -> { p.color = C.RED_HI; r.set(x - rad * 0.92f, y - rad * 0.92f, x + rad * 0.92f, y + rad * 0.92f); c.drawArc(r, 90f, 180f, true, p) }
         }
+    }
+}
+
+
+/** Barra gris para recorrer el teclado cuando esta ampliado (solo aparece con zoom). */
+class KeyScrollBar(ctx: Context, private val keys: KeyboardView) : View(ctx) {
+    private val p = Paint(Paint.ANTI_ALIAS_FLAG)
+    private val r = RectF()
+    private var grab = 0f
+    override fun onDraw(c: Canvas) {
+        if (keys.zoom <= 1.01f) return
+        val w = width.toFloat(); val h = height.toFloat()
+        val total = keys.width * keys.zoom
+        val tw = w * (keys.width / total); val tx = w * (keys.offset / total)
+        p.color = C.CARD2; r.set(0f, h * 0.35f, w, h * 0.65f); c.drawRoundRect(r, h, h, p)
+        p.color = C.MUTED; r.set(tx, h * 0.2f, tx + tw, h * 0.8f); c.drawRoundRect(r, h, h, p)
+    }
+    override fun onTouchEvent(e: MotionEvent): Boolean {
+        if (keys.zoom <= 1.01f) return false
+        val total = keys.width * keys.zoom
+        when (e.actionMasked) {
+            MotionEvent.ACTION_DOWN -> { grab = e.x; parent.requestDisallowInterceptTouchEvent(true) }
+            MotionEvent.ACTION_MOVE -> { keys.offset += (e.x - grab) * total / width; grab = e.x }
+        }
+        invalidate()
+        return true
     }
 }

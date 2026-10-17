@@ -154,13 +154,22 @@ class MainActivity : Activity(), Host {
     }
 
     @Suppress("DEPRECATION")
+    /** Solo en horizontal (reproductor y explorador) se ocultan las barras del telefono. */
+    private var immersiveOn = false
+
     private fun immersive(on: Boolean) {
+        immersiveOn = on
         if (Build.VERSION.SDK_INT >= 30) {
             val c = window.insetsController ?: return
             if (on) {
                 c.hide(WindowInsets.Type.systemBars())
                 c.systemBarsBehavior = WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
-            } else c.show(WindowInsets.Type.systemBars())
+                // si algo las vuelve a mostrar (captura de pantalla, menus del sistema), se ocultan solas otra vez
+                window.decorView.setOnApplyWindowInsetsListener { v, ins ->
+                    if (immersiveOn && ins.isVisible(WindowInsets.Type.navigationBars())) v.postDelayed({ if (immersiveOn) immersive(true) }, 1200)
+                    v.onApplyWindowInsets(ins)
+                }
+            } else { window.decorView.setOnApplyWindowInsetsListener(null); c.show(WindowInsets.Type.systemBars()) }
         } else {
             val d = window.decorView
             d.systemUiVisibility = if (on) (View.SYSTEM_UI_FLAG_FULLSCREEN or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY or View.SYSTEM_UI_FLAG_LAYOUT_STABLE) else View.SYSTEM_UI_FLAG_VISIBLE
@@ -169,7 +178,7 @@ class MainActivity : Activity(), Host {
 
     override fun onWindowFocusChanged(hasFocus: Boolean) {
         super.onWindowFocusChanged(hasFocus)
-        if (hasFocus && player != null) immersive(true)
+        if (hasFocus && immersiveOn) immersive(true)
     }
 
     @Deprecated("Deprecated in Java")
@@ -214,5 +223,6 @@ class MainActivity : Activity(), Host {
 
     override fun setOrientation(landscape: Boolean) {
         requestedOrientation = if (landscape) ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE else ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+        immersive(landscape)
     }
 }

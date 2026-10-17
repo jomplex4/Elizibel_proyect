@@ -225,3 +225,32 @@ class HelpDot(ctx: Context) : View(ctx) {
         c.drawText("?", cx, cy + s * 0.2f, p)
     }
 }
+
+/**
+ * Muestra un dialogo sin despertar las barras del sistema cuando la pantalla esta en modo inmersivo
+ * (reproductor). Se abre sin foco, se ocultan las barras de su ventana y luego recibe el foco.
+ */
+fun android.app.Dialog.showClean() {
+    val act = context as? android.app.Activity ?: (context as? android.content.ContextWrapper)?.baseContext as? android.app.Activity
+    val immersive = if (android.os.Build.VERSION.SDK_INT >= 30) {
+        val ins = act?.window?.decorView?.rootWindowInsets
+        ins != null && !ins.isVisible(android.view.WindowInsets.Type.navigationBars())
+    } else {
+        @Suppress("DEPRECATION")
+        (act?.window?.decorView?.systemUiVisibility ?: 0) and android.view.View.SYSTEM_UI_FLAG_HIDE_NAVIGATION != 0
+    }
+    val w = window
+    if (!immersive || w == null) { show(); return }
+    w.setFlags(android.view.WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE, android.view.WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE)
+    show()
+    if (android.os.Build.VERSION.SDK_INT >= 30) {
+        w.insetsController?.let {
+            it.hide(android.view.WindowInsets.Type.systemBars())
+            it.systemBarsBehavior = android.view.WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+        }
+    } else {
+        @Suppress("DEPRECATION")
+        w.decorView.systemUiVisibility = android.view.View.SYSTEM_UI_FLAG_FULLSCREEN or android.view.View.SYSTEM_UI_FLAG_HIDE_NAVIGATION or android.view.View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY or android.view.View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+    }
+    w.clearFlags(android.view.WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE)
+}
