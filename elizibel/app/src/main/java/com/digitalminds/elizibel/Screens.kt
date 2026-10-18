@@ -914,4 +914,4 @@ class HomeScreen(private val host: Host, private val open: (Song) -> Unit) : Fra
     fun reactivate() { if (tab == 3) tuner?.activate() }
 }
 
-object BuildConfigLite { const val VERSION = "2.1" }
+object BuildConfigLite { const val VERSION = "2.2" }

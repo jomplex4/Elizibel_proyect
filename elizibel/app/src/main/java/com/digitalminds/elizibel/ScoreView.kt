@@ -274,7 +274,7 @@ class ScoreView(ctx: Context) : View(ctx) {
                 val ty = if (up) maxY + sp * 2.2f else minY - sp * 1.4f
                 if (n === sorted.first() && !up || n === sorted.last() && up) { }
                 // flauta: una fila de nombres encima del pentagrama, uno sobre cada nota (como los pistones en ART STAR)
-                if (staves == 1) { if (n === sorted.last()) { textP.textSize = sp * 1.3f; textP.typeface = Fonts.bold; c.drawText(Names.spelled(n.dia, n.alt), x + hw / 2, topOf(0) - sp * 3.1f, textP) } }
+                if (staves == 1) { if (n === sorted.last()) { textP.textSize = max(sp * 1.7f, context.dp(15f)); textP.typeface = Fonts.bold; if (textP.color != C.RED_HI) textP.color = C.TEXT; c.drawText(Names.spelled(n.dia, n.alt), x + hw / 2, topOf(0) - sp * 3.3f, textP) } }
                 else c.drawText(Names.spelled(n.dia, n.alt), x + hw / 2, if (up) y + sp * 2.1f else y - sp * 1.3f, textP)
                 if (ty < 0) { }
             }

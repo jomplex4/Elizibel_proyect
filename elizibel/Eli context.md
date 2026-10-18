@@ -1,7 +1,7 @@
-# ELI CONTEXT: ELIZIBEL v2.1
+# ELI CONTEXT: ELIZIBEL v2.2
 
 ## 1. Resumen
-App Android nativa de DigitalMinds (dueño: Redy; creador mostrado en "Acerca de": Joel Mamani Pauccara, no se discute) para aprender y practicar piano y flauta dulce soprano con canciones reales. Partitura que avanza, teclado de 88 teclas con notas que caen, flauta con digitación, metrónomo y afinador. v2.1 compila con kotlinc; **nada se ha probado en el teléfono** (Galaxy A03 Core, Android 13). Hermana de ART STAR (misma base de código).
+App Android nativa de DigitalMinds (dueño: Redy; creador mostrado en "Acerca de": Joel Mamani Pauccara, no se discute) para aprender y practicar piano y flauta dulce soprano con canciones reales. Partitura que avanza, teclado de 88 teclas con notas que caen, flauta con digitación, metrónomo y afinador. v2.2 compila con kotlinc; **nada se ha probado en el teléfono** (Galaxy A03 Core, Android 13). Hermana de ART STAR (misma base de código).
 
 ## 2. Tecnología
 - Kotlin 2.0.21, AGP 8.7.3, Gradle 8.9, JDK 17, compileSdk/targetSdk 34, minSdk 26. Una Activity, UI por código (sin XML ni Compose), sin librerías externas, sin internet.
@@ -18,7 +18,7 @@ App Android nativa de DigitalMinds (dueño: Redy; creador mostrado en "Acerca de
 - Formato de canción: 480 ticks por negra; `ev=[tick,dur,staff,stem,beam,dots,tuplet,part,rest,notes[[midi,dia,alt,shown,tie,oct,dedo]],base]`; `measures=[num,den,key,start,len]`; `order` despliega repeticiones.
 
 ## 4. Funciones actuales
-- Horizontal a pantalla completa (incluida la franja de la cámara); las barras del sistema se dibujan encima sin achicar la app. Metrónomo del reproductor: negras, pulso de la canción o apagado.
+- Horizontal a pantalla completa (incluida la franja de la cámara); las barras del sistema se dibujan encima sin achicar la app. Metrónomo del reproductor: negras fijas a 100 por minuto, pulso de la canción (sigue la velocidad elegida) o apagado. La cuenta inicial (tan, tan, tin) va siempre a 100 negras por minuto.
 - Piano: pentagrama doble, teclado ajustado a la canción u 88 teclas, notas que caen (arrastre vertical), práctica por mano, rojo/rosado. Flauta: arriba las próximas 5 digitaciones (la actual en rojo), abajo la partitura con el nombre encima de cada nota, a la derecha la flauta solo con agujeros.
 - Piano: menú "Suenan" (barra superior y Ajustes) para silenciar mano derecha, izquierda o ambas; la melodía (nota más aguda) suena más fuerte que el resto del acorde.
 - Modos Libre, Espera y Evaluar (récord), bucles (2/4/8, hasta el final, toda la canción, acelerado), velocidades 40-150 %, cuenta previa On/Off, silenciar una parte (Piano 1/2, Flauta 1/2), volumen de la app y de mis teclas.
@@ -43,7 +43,8 @@ App Android nativa de DigitalMinds (dueño: Redy; creador mostrado en "Acerca de
 - Corazón: faltan compases 46 a 59 (PDF dañado) y la app numera 1 a 66, no como el impreso. El usuario oyó saltos bruscos agudo-grave en los compases 33 a 37 y 53 a 57 (partitura leída = PDF, sextas en la derecha, sin error hallado): pedir compás y descripción exacta si persiste.
 - Final de las líneas 8va en Interstellar sin confirmar de oído. Dulce Navidad flauta: la hoja del usuario dice "re" donde el PDF tiene un silencio.
 - Transcritas a ojo, verificar de oído: Greensleeves, Titanic, We Wish You, Para Elisa, La mañana, Canon, melodías infantiles. Someone You Loved es solo acompañamiento.
-- Faltan por no tener partitura legible: Past Lives, Una mattina (original), Canon completo, Hedwig, Gymnopédie, One Summer's Day. Mi corazón encantado de flauta es lectura a ojo de un escaneo, un tono abajo.
+- Pendiente: Una mattina (Einaudi). Los PDF recibidos son versiones cortas o escaneadas; hace falta un PDF vectorial completo.
+- Faltan por no tener partitura legible: Past Lives, Canon completo, Hedwig, Gymnopédie, One Summer's Day. Mi corazón encantado de flauta es lectura a ojo de un escaneo, un tono abajo.
 - Interstellar 97-110: la izquierda cruza sobre la derecha (está así en la partitura).
 - Listen to Your Heart: versión original (voz en la derecha, piano en la izquierda) con huecos de la melodía de hasta un tiempo rellenados; no cambiar más su arreglo.
 - `make_piano.py` aún trae el Interstellar viejo: no ejecutarlo sin quitarlo (pisaría el nuevo). Los scripts leen PDFs de `/mnt/user-data/uploads`.

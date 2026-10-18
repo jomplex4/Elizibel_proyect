@@ -141,6 +141,7 @@ class PlayerScreen(private val host: Host, private val song: Song) : FrameLayout
     private val strip = FingerStrip(ctx)
     /** Metronomo del reproductor: 0 apagado, 1 negras, 2 al pulso de la cancion. */
     private var metroMode = 0
+    private var lastClickMs = 0L
     private val playBtn = PlayButton(ctx)
     private val seek = SeekView(ctx) { f -> seekTo(f * tl.total) }
     private val measureV = label(ctx, "", 12f, C.TEXT, Fonts.title)
@@ -385,6 +386,12 @@ class PlayerScreen(private val host: Host, private val song: Song) : FrameLayout
 
     fun play() {
         if (playing) return
+        // los sonidos se cargan al abrir la app: si aun no estan listos, se espera y se arranca solo
+        if (!Bank.ready) {
+            statusV.text = "Cargando sonidos…"; statusV.setTextColor(C.MUTED)
+            handler.postDelayed({ if (!playing) play() }, 200)
+            return
+        }
         if (curT >= tl.total - 1) seekTo(if (loopA >= 0) loopA else 0f)
         playing = true
         playBtn.playing = true
@@ -401,7 +408,7 @@ class PlayerScreen(private val host: Host, private val song: Song) : FrameLayout
     private fun countdownBeat() {
         if (!playing) return
         if (countdown <= 0) { lastMs = SystemClock.uptimeMillis(); handler.post(frame); statusV.text = ""; refreshStatus(); return }
-        val ms = (480f / ticksPerMs()).toLong()
+        val ms = 600L   // 100 negras por minuto
         host.synth.click(if (countdown == 1) 2 else 1)
         statusV.text = countdown.toString()
         statusV.setTextColor(C.RED_HI)
@@ -428,7 +435,9 @@ class PlayerScreen(private val host: Host, private val song: Song) : FrameLayout
         val dt = (now - lastMs).coerceIn(0, 80)
         lastMs = now
         if (!playing) return
-        var next = curT + dt * ticksPerMs()
+        // la cuenta inicial va siempre a 100 negras por minuto (480 ticks cada 600 ms), sin importar la cancion ni la velocidad
+        val base0 = if (loopA >= 0) loopA else 0f
+        var next = if (curT < base0) min(base0, curT + dt * 0.8f) else curT + dt * ticksPerMs()
         waiting = false
         if (mode == 1 && stopIdx < stops.size) {
             val st = tl.events[stops[stopIdx]].t.toFloat()
@@ -445,15 +454,18 @@ class PlayerScreen(private val host: Host, private val song: Song) : FrameLayout
             if (autoUp) { val i = speeds.indexOf(speed); if (i >= 0 && i < speeds.size - 1) { speed = speeds[i + 1]; speedBtn.setText("$speed %") } }
             seekTo(loopA); return
         }
-        if (metroOn && next >= 0f) {
+        if (metroOn && metroMode == 1) {
+            // negras fijas a 100 por minuto, en tiempo real
+            if (now - lastClickMs >= 600) { lastClickMs = now; host.synth.click(1) }
+        } else if (metroOn && next >= 0f) {
+            // al pulso de la cancion: sigue la velocidad elegida
             val pm = tl.measures[tl.pmAt(next)]
-            val beat = if (metroMode == 1) 480 else if (pm.m.den == 8) 720 else 1920 / pm.m.den
+            val beat = if (pm.m.den == 8) 720 else 1920 / pm.m.den
             val bi = ((next - pm.t) / beat).toInt()
             val gb = pm.t / 10 + bi
             if (gb != lastBeat) { lastBeat = gb; host.synth.click(if (metroAccent && bi == 0) 2 else 1) }
         }
         // cuenta al empezar: la partitura corre en blanco y suenan tres negras
-        val base0 = if (loopA >= 0) loopA else 0f
         if (next < base0) {
             val b = ((next - (base0 - PRE)) / 480f).toInt()
             if (b != preBeat && b in 0..2) { preBeat = b; host.synth.click(if (b == 2) 2 else 1); statusV.text = (3 - b).toString(); statusV.setTextColor(C.RED_HI) }
