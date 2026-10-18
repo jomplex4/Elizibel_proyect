@@ -94,7 +94,7 @@ class ScoreView(ctx: Context) : View(ctx) {
     private fun key(pe: PEv, midi: Int): Long = (System.identityHashCode(pe).toLong() shl 8) or midi.toLong()
 
     override fun onSizeChanged(w: Int, h: Int, ow: Int, oh: Int) {
-        sp = h / (if (staves == 2) 23.5f else 14f)
+        sp = h / (if (staves == 2) 23.5f else 12f)
     }
 
     private fun topOf(staff: Int): Float = if (staves == 1) 5f * sp else if (staff == 0) 4.6f * sp else 14.8f * sp
@@ -273,7 +273,9 @@ class ScoreView(ctx: Context) : View(ctx) {
                 textP.textSize = sp * 1.05f; textP.typeface = Fonts.medium
                 val ty = if (up) maxY + sp * 2.2f else minY - sp * 1.4f
                 if (n === sorted.first() && !up || n === sorted.last() && up) { }
-                c.drawText(Names.spelled(n.dia, n.alt), x + hw / 2, if (up) y + sp * 2.1f else y - sp * 1.3f, textP)
+                // flauta: una fila de nombres encima del pentagrama, uno sobre cada nota (como los pistones en ART STAR)
+                if (staves == 1) { if (n === sorted.last()) { textP.textSize = sp * 1.3f; textP.typeface = Fonts.bold; c.drawText(Names.spelled(n.dia, n.alt), x + hw / 2, topOf(0) - sp * 3.1f, textP) } }
+                else c.drawText(Names.spelled(n.dia, n.alt), x + hw / 2, if (up) y + sp * 2.1f else y - sp * 1.3f, textP)
                 if (ty < 0) { }
             }
             if (n.oct != 0 && n === sorted.last()) {

@@ -138,6 +138,9 @@ class PlayerScreen(private val host: Host, private val song: Song) : FrameLayout
     private val score = ScoreView(ctx)
     private val keys = KeyboardView(ctx)
     private val fluteV = FluteView(ctx)
+    private val strip = FingerStrip(ctx)
+    /** Metronomo del reproductor: 0 apagado, 1 negras, 2 al pulso de la cancion. */
+    private var metroMode = 0
     private val playBtn = PlayButton(ctx)
     private val seek = SeekView(ctx) { f -> seekTo(f * tl.total) }
     private val measureV = label(ctx, "", 12f, C.TEXT, Fonts.title)
@@ -228,7 +231,13 @@ class PlayerScreen(private val host: Host, private val song: Song) : FrameLayout
         val mb = FrameLayout(ctx)
         metroBtn.color = C.MUTED
         mb.addView(metroBtn, LayoutParams(ctx.dpi(24f), ctx.dpi(24f), Gravity.CENTER))
-        mb.tap { metroOn = !metroOn; metroBtn.color = if (metroOn) C.RED_HI else C.MUTED; host.toast(if (metroOn) "Metrónomo encendido" else "Metrónomo apagado") }
+        mb.tap {
+            dropdown(metroBtn, listOf("Clic en cada negra", "Clic al pulso de la canción", "Apagar metrónomo"), when (metroMode) { 1 -> 0; 2 -> 1; else -> 2 }) { i ->
+                metroMode = when (i) { 0 -> 1; 1 -> 2; else -> 0 }
+                metroOn = metroMode != 0; lastBeat = -1
+                metroBtn.color = if (metroOn) C.RED_HI else C.MUTED
+            }
+        }
         right.addView(mb, lp(ctx.dpi(42f), ctx.dpi(42f)))
         val gear = FrameLayout(ctx)
         gear.addView(IconView(ctx, IconView.GEAR), LayoutParams(ctx.dpi(22f), ctx.dpi(22f), Gravity.CENTER))
@@ -273,10 +282,17 @@ class PlayerScreen(private val host: Host, private val song: Song) : FrameLayout
         (keys.parent as? ViewGroup)?.removeView(keys)
         (fluteV.parent as? ViewGroup)?.removeView(fluteV)
         if (flute) {
-            // partitura a la izquierda y la flauta a la derecha
+            // arriba las proximas digitaciones; abajo la partitura (mas chica) con el nombre de cada nota; a la derecha la flauta
+            (strip.parent as? ViewGroup)?.removeView(strip)
+            fluteV.plain = true
+            score.showNames = true
             val row = LinearLayout(ctx)
-            row.addView(score, lp(0, MATCH, 0.7f))
-            row.addView(fluteV, lp(0, MATCH, 0.3f))
+            val left = LinearLayout(ctx)
+            left.orientation = LinearLayout.VERTICAL
+            left.addView(strip, lp(MATCH, 0, 0.42f).also { it.setMargins(ctx.dpi(8f), ctx.dpi(4f), ctx.dpi(8f), 0) })
+            left.addView(score, lp(MATCH, 0, 0.58f))
+            row.addView(left, lp(0, MATCH, 0.84f))
+            row.addView(fluteV, lp(0, MATCH, 0.16f))
             middle.addView(row, LayoutParams(MATCH, MATCH))
             return
         }
@@ -431,7 +447,7 @@ class PlayerScreen(private val host: Host, private val song: Song) : FrameLayout
         }
         if (metroOn && next >= 0f) {
             val pm = tl.measures[tl.pmAt(next)]
-            val beat = if (pm.m.den == 8) 720 else 1920 / pm.m.den
+            val beat = if (metroMode == 1) 480 else if (pm.m.den == 8) 720 else 1920 / pm.m.den
             val bi = ((next - pm.t) / beat).toInt()
             val gb = pm.t / 10 + bi
             if (gb != lastBeat) { lastBeat = gb; host.synth.click(if (metroAccent && bi == 0) 2 else 1) }
@@ -592,6 +608,11 @@ class PlayerScreen(private val host: Host, private val song: Song) : FrameLayout
             if (ci < 0) { var k = 0; while (k < userEv.size && userEv[k].e.part != userPart) k++; if (k < userEv.size) { cur = userEv[k].e.notes.maxOf { it.midi }; nextIdx = k + 1 } }
             val nx = if (nextIdx < userEv.size) userEv[nextIdx].e.notes.maxOf { it.midi } else -1
             fluteV.midi = cur; fluteV.next = nx
+            val list = ArrayList<Int>()
+            if (cur >= 0) list.add(cur)
+            var k = nextIdx
+            while (k < userEv.size && list.size < 5) { if (userEv[k].e.part == userPart) list.add(userEv[k].e.notes.maxOf { it.midi }); k++ }
+            strip.notes = list
         }
     }
 

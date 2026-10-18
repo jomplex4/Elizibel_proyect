@@ -294,7 +294,7 @@ class TunerTab(private val host: Host) : FrameLayout(host as Context) {
     private val octV = label(ctx, "", 22f, C.MUTED, Fonts.medium)
     private val freqV = label(ctx, "", 14f, C.MUTED)
     private val writtenV = label(ctx, "", 15f, C.TEXT, Fonts.medium)
-    private val statusV = label(ctx, "", 13f, C.MUTED)
+    private val statusV = label(ctx, "", 19.5f, C.MUTED, Fonts.medium)
     private val instInfoV = label(ctx, "", 12f, C.DIM)
     private val bar = CentsBar(ctx)
     private val arc = DbArc(ctx)

@@ -17,7 +17,8 @@ for i, (s, d, n) in enumerate(rh):
     if nxt and s + d > nxt[0] and (s // ML) in melm:
         d = nxt[0] - s
     clean.append((s, d, n))
-# legato: un hueco de hasta una corchea entre dos notas se llena alargando la anterior (sin silencios que corten la melodia)
+# version original (melodia de la voz + piano de la cancion) con espacios mas cortos:
+# en la melodia, un hueco de hasta un tiempo se llena alargando la nota anterior. La izquierda queda como esta.
 def legato(notes):
     notes = sorted(notes); out = []
     starts = sorted(set(s for s, d, n in notes))
@@ -25,24 +26,10 @@ def legato(notes):
         nxt = [x for x in starts if x > s]
         if nxt:
             gap = nxt[0] - (s + d)
-            if 0 < gap <= 240: d = nxt[0] - s
+            if 0 < gap <= 480: d = nxt[0] - s
         out.append((s, d, n))
     return out
-clean = legato(clean); plh = legato(plh)
-# manos sin cruzarse: si un acorde de la izquierda queda por encima de la melodia que suena, baja una octava
-def rh_at(t):
-    v = [n for s, d, n in clean if s <= t < s + d]
-    return min(v) if v else None
-fixed = []; crosses = 0
-groups = {}
-for s, d, n in plh: groups.setdefault(s, []).append((s, d, n))
-for s, g in sorted(groups.items()):
-    top = max(n for _, _, n in g); r = rh_at(s)
-    if r is not None and top >= r and min(n for _, _, n in g) - 12 >= 28:
-        g = [(a, b, n - 12) for a, b, n in g]; crosses += 1
-    fixed += g
-plh = fixed
-print('acordes de la izquierda bajados para no cruzar la melodia:', crosses)
+clean = legato(clean)
 ev = to_events(clean, 0, 0, ML) + to_events(plh, 1, 0, ML)
 end = max(e[0] + e[1] for e in ev)
 nm = (end + ML - 1) // ML

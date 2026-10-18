@@ -249,6 +249,8 @@ class FluteView(ctx: Context) : View(ctx) {
     var compact = false
     /** Version chica para la tabla: solo flauta y nombre. */
     var mini = false
+    /** Solo la flauta con sus agujeros (reproductor): sin nombres de dedos ni de mano. */
+    var plain = false
     private val p = Paint(Paint.ANTI_ALIAS_FLAG)
     private val r = RectF()
     private val fingers = arrayOf("pulgar", "índice", "medio", "anular", "índice", "medio", "anular", "meñique")
@@ -256,9 +258,9 @@ class FluteView(ctx: Context) : View(ctx) {
     override fun onDraw(c: Canvas) {
         val w = width.toFloat(); val h = height.toFloat()
         val u = context.dp(1f)
-        val showName = !compact && !mini
+        val showName = !compact && !mini && !plain
         val nameW = if (showName) w * 0.32f else 0f
-        val labels = !mini
+        val labels = !mini && !plain
         val area = w - nameW
         val top = h * (if (mini) 0.16f else 0.03f); val bot = h * 0.98f
         val len = bot - top
@@ -359,5 +361,52 @@ class KeyScrollBar(ctx: Context, private val keys: KeyboardView) : View(ctx) {
         }
         invalidate()
         return true
+    }
+}
+
+
+/**
+ * Proximas digitaciones de la flauta: la nota actual (marcada en rojo) y las que vienen,
+ * cada una con su flautita y su nombre, para leer por adelantado.
+ */
+class FingerStrip(ctx: Context) : View(ctx) {
+    var notes: List<Int> = emptyList()
+        set(v) { if (field != v) { field = v; invalidate() } }
+    private val p = Paint(Paint.ANTI_ALIAS_FLAG)
+    private val r = RectF()
+
+    override fun onDraw(c: Canvas) {
+        if (notes.isEmpty()) return
+        val w = width.toFloat(); val h = height.toFloat(); val u = context.dp(1f)
+        val n = 5
+        val cw = w / n
+        p.textAlign = Paint.Align.CENTER
+        p.typeface = Fonts.title; p.textSize = u * 8.5f; p.color = C.DIM
+        c.drawText("AHORA", cw * 0.5f, u * 11f, p)
+        c.drawText("LUEGO", cw * 2.5f, u * 11f, p)
+        for ((i, m) in notes.take(n).withIndex()) {
+            val cx = cw * (i + 0.5f)
+            val top = u * 18f; val bot = h - u * 22f
+            val len = bot - top
+            val bw = min(cw * 0.22f, len * 0.16f)
+            val cur = i == 0
+            p.style = Paint.Style.FILL
+            p.color = if (cur) C.FLUTE else 0xFF8C8E94.toInt()
+            r.set(cx - bw / 2, top, cx + bw / 2, bot); c.drawRoundRect(r, bw * 0.4f, bw * 0.4f, p)
+            val holes = RecorderFingering.of(m)
+            val rr = bw * 0.26f
+            val ys = FloatArray(8) { k -> top + len * (0.14f + k * 0.11f) }
+            val idx = intArrayOf(0, 1, 2, 3, 4, 5, 6, 8)
+            for (k in 0..7) {
+                val st = holes?.get(idx[k]) ?: 0
+                val x = if (k == 0) cx - bw * 0.95f else cx
+                p.color = 0xFF2B2C31.toInt(); c.drawCircle(x, ys[k], rr, p)
+                if (st == 1) { p.color = if (cur) C.RED_HI else C.RED; c.drawCircle(x, ys[k], rr * 0.9f, p) }
+                if (st == 2) { p.color = if (cur) C.RED_HI else C.RED; r.set(x - rr * 0.9f, ys[k] - rr * 0.9f, x + rr * 0.9f, ys[k] + rr * 0.9f); c.drawArc(r, 90f, 180f, true, p) }
+            }
+            p.typeface = Fonts.bold; p.textSize = u * (if (cur) 14f else 12f)
+            p.color = if (cur) C.TEXT else C.MUTED
+            c.drawText(Names.pitchClass(m), cx, h - u * 5f, p)
+        }
     }
 }

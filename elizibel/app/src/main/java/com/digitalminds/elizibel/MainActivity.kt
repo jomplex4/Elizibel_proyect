@@ -159,6 +159,14 @@ class MainActivity : Activity(), Host {
 
     private fun immersive(on: Boolean) {
         immersiveOn = on
+        // en horizontal la app ocupa toda la pantalla, tambien la franja de la camara, y las barras del
+        // sistema (si aparecen, por ejemplo al tomar una captura) se dibujan encima sin achicar la app
+        if (Build.VERSION.SDK_INT >= 28) {
+            val a = window.attributes
+            a.layoutInDisplayCutoutMode = if (on) android.view.WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES else android.view.WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_DEFAULT
+            window.attributes = a
+        }
+        if (Build.VERSION.SDK_INT >= 30) window.setDecorFitsSystemWindows(!on)
         if (Build.VERSION.SDK_INT >= 30) {
             val c = window.insetsController ?: return
             if (on) {
@@ -172,7 +180,7 @@ class MainActivity : Activity(), Host {
             } else { window.decorView.setOnApplyWindowInsetsListener(null); c.show(WindowInsets.Type.systemBars()) }
         } else {
             val d = window.decorView
-            d.systemUiVisibility = if (on) (View.SYSTEM_UI_FLAG_FULLSCREEN or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY or View.SYSTEM_UI_FLAG_LAYOUT_STABLE) else View.SYSTEM_UI_FLAG_VISIBLE
+            d.systemUiVisibility = if (on) (View.SYSTEM_UI_FLAG_FULLSCREEN or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY or View.SYSTEM_UI_FLAG_LAYOUT_STABLE or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION) else View.SYSTEM_UI_FLAG_VISIBLE
         }
     }
 

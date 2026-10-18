@@ -8,4 +8,4 @@ level: 1
 time: 4/4
 key: 1
 bpm: 92
-mel: q:B4 q:A4 q:G4 q:A4 | q:B4 q:B4 h:B4 | q:A4 q:A4 h:A4 | q:B4 q:D5 h:D5 | q:B4 q:A4 q:G4 q:A4 | q:B4 q:B4 q:B4 q:B4 | q:A4 q:A4 q:B4 q:A4 | w:G4
+mel: q:B4 q:A4 q:G4 q:A4 | q:B4 q:B4 h:B4 | q:A4 q:A4 h:A4 | q:B4 q:C5 h:C5 | q:B4 q:A4 q:G4 q:A4 | q:B4 q:B4 q:B4 q:B4 | q:A4 q:A4 q:B4 q:A4 | w:G4
